@@ -28,8 +28,17 @@ filter(category != " other")
 demo_transposed = demo %>%
   pivot_wider(names_from = ord, values_from = val) %>%
   full_join(conditions_filtered, by = "sid") %>%
-  rename(sex = "0", age = "2", res = "3", edu = "4", kid = "6", ses = "7", bcc = "8", ccc = "9") %>%
-  select(sid, category, sex, age, res, edu, kid, ses, bcc, ccc)
+  rename(sex = "0", birth = "2", res = "3", edu = "4", kid = "6", ses = "7", bcc = "8", ccc = "9") %>%
+  mutate(gen = case_when(
+    between(birth, 1997, 2023) ~ "Z",
+    between(birth, 1981, 1996) ~ "Y",
+    between(birth, 1965, 1980) ~ "X",
+    between(birth, 1946, 1964) ~ "Boomer",
+    between(birth, 1928, 1945) ~ "Silent",
+    TRUE ~ NA_character_
+  )) %>%
+  mutate(age = 2023 - birth) %>%
+select(sid, category, sex, age, gen, res, edu, kid, ses, bcc, ccc)
 
 questionnaires_transposed = questionnaires %>%
   group_by(sid) %>%
@@ -42,18 +51,12 @@ questionnaires_transposed = questionnaires %>%
 
 ratings_transposed = ratings %>%
   group_by(sid) %>%
-  mutate(condition = factor(recode(ord, "0"="ANG", "1"="COM", "2"="HOP", "3"="NEU")),
+  mutate(category = factor(recode(ord, "0"="ANG", "1"="COM", "2"="HOP", "3"="NEU")),
          scale = factor(recode(part, "0"="val", "1"="aro", "2"="ang", "3"="com", "4"="hop"))) %>%
-  select(sid, stid, condition, scale, opt) %>%
-  pivot_wider(id_cols = c("sid", "stid"),
-              names_from = c("condition", "scale"),
-              names_sep = "_",
-              names_sort = T,
-              values_from = "opt") %>%
-  select(sid, stid, ANG_val, ANG_aro, ANG_ang, ANG_com, ANG_hop,
-         COM_val, COM_aro, COM_ang, COM_com, COM_hop,
-         HOP_val, HOP_aro, HOP_ang, HOP_com, HOP_hop,
-         NEU_val, NEU_aro, NEU_ang, NEU_com, NEU_hop)
+  select(sid, stid, category, scale, opt) %>%
+  pivot_wider(id_cols = c("sid", "stid", "category"),
+              names_from = "scale",
+              values_from = "opt")
   
 intentions_transposed = intentions %>%
   select(sid, ord, opt) %>%
