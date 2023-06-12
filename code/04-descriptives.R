@@ -1,8 +1,6 @@
-library(dplyr)
-library(ggplot2)
-
 summary_stats = demo_transposed %>%
   group_by(category)%>%
+  na.omit()%>%
   summarise(
     bcc_mean = mean(bcc),
     bcc_sd = sd(bcc),

@@ -25,20 +25,21 @@ colnames(weptings) = c("sid", "stid", "ord", "mh", "fh", "name")
 conditions_filtered = conditions %>%
 filter(category != " other")
 
-demo_transposed = demo %>%
+demo_transposed <- demo %>%
   pivot_wider(names_from = ord, values_from = val) %>%
   full_join(conditions_filtered, by = "sid") %>%
   rename(sex = "0", birth = "2", res = "3", edu = "4", kid = "6", ses = "7", bcc = "8", ccc = "9") %>%
-  mutate(gen = case_when(
-    between(birth, 1997, 2023) ~ "Z",
-    between(birth, 1981, 1996) ~ "Y",
-    between(birth, 1965, 1980) ~ "X",
-    between(birth, 1946, 1964) ~ "Boomer",
-    between(birth, 1928, 1945) ~ "Silent",
-    TRUE ~ NA_character_
-  )) %>%
+  mutate(birth = as.numeric(birth),  # Convert birth to numeric
+         gen = case_when(
+           between(birth, 1997, 2023) ~ "Z",
+           between(birth, 1981, 1996) ~ "Y",
+           between(birth, 1965, 1980) ~ "X",
+           between(birth, 1946, 1964) ~ "Boomer",
+           between(birth, 1928, 1945) ~ "Silent",
+           TRUE ~ NA_character_
+         )) %>%
   mutate(age = 2023 - birth) %>%
-select(sid, category, sex, age, gen, res, edu, kid, ses, bcc, ccc)
+  select(sid, sex, age, gen, res, edu, kid, ses, bcc, ccc)
 
 questionnaires_transposed = questionnaires %>%
   group_by(sid) %>%
@@ -72,7 +73,7 @@ weptings_transposed = weptings  %>%
 pebs = full_join(weptings_transposed, donations, by = "sid") %>%
   full_join(conditions_filtered, by = "sid") %>%
   full_join(intentions_transposed, by = "sid") %>%
-  select("sid", "category", "int", "aim", "wept", "val") %>%
+  select("sid", "int", "aim", "wept", "val") %>%
   rename("donation" = "val") %>%
   mutate(cPEB = (as.integer(wept)/15 + as.integer(donation)/20) /2)
 # mutate(cPEB = (as.integer(wept)/15 + as.integer(donation)/100) /2) %>%
