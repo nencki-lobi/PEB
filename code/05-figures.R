@@ -40,7 +40,7 @@ fdir = fdir.create("H2")
 ##median
 p = ggplot(df, aes(x=category, y=donation, fill=category)) +
   geom_boxplot(notch = TRUE) +
-  xlab("Category") + ylab("Donation")
+  xlab("Category") + ylab("Median donation")
 ggsave("H2 - Me-effect-donation.png", p, width = 10, height = 10, path = fdir)
 
 p = ggplot(df, aes(x=category, y=wept, fill=category)) +
@@ -56,21 +56,26 @@ ggsave("H2 - Me-effect-cPEB.png", p, width = 10, height = 10, path = fdir)
 
 
 ##mean
-p = ggplot(df, aes(x=category, y=donation, fill=category)) +
+
+summary_df = aggregate(donation ~ category, data = df, FUN = function(x) c(mean = mean(x), sd = sd(x)))
+
+p = ggplot(summary_df, aes(x=category, y=donation[,"mean"], fill=category)) +
   geom_bar(stat = "identity") +
-  xlab("Category") + ylab("Completed WEPT pages")
+  xlab("Category") + ylab("Mean donation")
 ggsave("H2 - M-effect-donation.png", p, width = 10, height = 10, path = fdir)
 
+summary_df = aggregate(wept ~ category, data = df, FUN = function(x) c(mean = mean(x), sd = sd(x)))
 
-p = ggplot(df, aes(x=category, y=wept, fill=category)) +
+p = ggplot(summary_df, aes(x=category, y=wept[,"mean"], fill=category)) +
   geom_bar(stat = "identity") +
   xlab("Category") + ylab("Completed WEPT pages")
 ggsave("H2 - M-effect-WEPT.png", p, width = 10, height = 10, path = fdir)
 
+summary_df = aggregate(cPEB ~ category, data = df, FUN = function(x) c(mean = mean(x), sd = sd(x)))
 
-p = ggplot(df, aes(x=category, y=cPEB, fill=category)) +
+p = ggplot(summary_df, aes(x=category, y=cPEB[,"mean"], fill=category)) +
   geom_bar(stat = "identity") +
-  xlab("Category") + ylab("Completed WEPT pages")
+  xlab("Category") + ylab("Summary cPEB score")
 ggsave("H2 - M-effect-cPEB.png", p, width = 10, height = 10, path = fdir)
 
 fdir = fdir.create("Unregistered")
