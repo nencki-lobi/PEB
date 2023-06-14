@@ -2,26 +2,49 @@ library('ggplot2')
 library('report')
 library('lavaan')
 
-#Hypothesis 1
+odir = "./output"
+if (!dir.exists(odir)) {dir.create(odir)}
 
-df =  full_join(conditions_filtered, pebs, by = "sid") %>%
-  select(sid, stid, category, int, aim, wept, donation, cPEB) %>%
+fdir.create = function(name) {
+  fdir = file.path(odir, name)
+  if (!dir.exists(fdir)) {dir.create(fdir)}
+  fdir}
+
+fdir = fdir.create("Statistics")
+
+sink("./output/Statistics/statistics.txt")
+
+df = full_join(conditions_filtered, pebs, by = "sid") %>%
+  full_join(demo_transposed, by = 'sid') %>%
+  full_join(ratings_transposed, by = 'sid') %>%
+  full_join(questionnaires_transposed, by = 'sid') %>%
+  select(sid, stid, category.x, int, aim, wept, donation, cPEB, sex, age, res, edu, kid, ses, bcc, ccc, val, aro, hop, com, ang, PCAE_i, PCAE_c, PCAE, PD, WTS)  %>%
+  rename(category = category.x) %>%
   mutate(emo = ifelse(category == " NEU", 0, 1)) %>%
   na.omit()
 
+#Hypothesis 1
+cat("\n \n Hypothesis 1: t-test \n \n")
 var_test_result = var.test(cPEB ~ emo, data = df)
 t_test_result = t.test(cPEB ~ emo, data = df)
 t_test_result
+report(t_test_result)
 
 ## unregistered analysis
+
+cat("\n \n Hypothesis 1: unregistered MANOVA \n \n")
 manova_result = manova(cbind(wept, donation) ~ emo, data = df)
 summary.aov(manova_result)
+report(manova_result)
 
 #Hypothesis 2
+cat("\n \n Hypothesis 2: ANOVA \n \n")
 
 anova_result = aov(donation ~ category, data = df)
 summary(anova_result)
 report(anova_result)
+
+#tukey_hsd(donation ~ category, data=df)
 
 anova_result = aov(wept ~ category, data = df)
 summary(anova_result)
@@ -31,36 +54,18 @@ anova_result = aov(cPEB ~ category, data = df)
 summary(anova_result)
 report(anova_result)
 
-ggplot(df, aes(x=category, y=donation, fill=category)) +
-  geom_boxplot(notch = TRUE) +
-  xlab("Category") + ylab("Donation")
-
-ggplot(df, aes(x=category, y=wept, fill=category)) +
-  geom_boxplot(notch = TRUE) +
-  xlab("Category") + ylab("Completed WEPT pages")
-
-ggplot(df, aes(x=category, y=cPEB, fill=category)) +
-  geom_boxplot(notch = TRUE) +
-  xlab("Category") + ylab("Summary cPEB score")
-
 #Hypothesis 3
-
+cat("\n \n Hypothesis 3: chi-square \n \n")
 freq_aim = table(df$category, df$aim)
-print(freq_aim)
+freq_aim
 percentages_aim = prop.table(freq_aim, margin = 1) * 100
-print(percentages_aim)
+percentages_aim
 chi_square_test = chisq.test(df$aim, df$category)
-print(chi_square_test)
+chi_square_test
 
 #Hypothesis 4
 
-df = full_join(conditions_filtered, pebs, by = "sid") %>%
-  full_join(demo_transposed, by = 'sid') %>%
-  full_join(ratings_transposed, by = 'sid') %>%
-  full_join(questionnaires_transposed, by = 'sid') %>%
-  select(sid, stid, category.x, int, aim, wept, donation, cPEB, sex, age, res, edu, kid, ses, bcc, ccc, val, aro, hop, com, ang, PCAE_i, PCAE_c, PCAE, PD, WTS)  %>%
-  rename(category = category.x) %>%
-  na.omit()
+cat("\n \n Hypothesis 4: regression models \n \n")
 
 #cPEB
 model = lm(cPEB ~ category + category:sex + category:age + category:res + category:edu + category:kid + category:ses +
@@ -81,7 +86,7 @@ report(model)
 summary(model)
 
 ##unregistered analyses
-
+cat("\n \n Hypothesis 4: unregisterd models \n \n")
 model = lm(cPEB ~ sex + age + res + edu + kid + ses +
              bcc + ccc + val + aro + PCAE + PD + WTS, data = df)
 
@@ -126,28 +131,15 @@ fit = sem(model, data = df)
 summary(fit, standardized = TRUE)
 
 #Other analyses
+cat("\n \n Other unregistered analyses \n")
 
 ## Correlation between WEPT and donations
+cat("\n \n Correlation between WEPT and donations \n \n")
 correlation = df %>%
   group_by(wept) %>%
   na.omit() %>%
   summarise(mean_donation = mean(donation), mean_wept = mean(wept))
-  
-## bar
-correlation_plot = ggplot(correlation, aes(x = wept, y = mean_donation)) +
-  geom_bar(stat = "identity") +
-  labs(x = "Wept", y = "Mean Donation") +
-  ggtitle("Mean Donation for Each Wept Level")
 
-print(correlation_plot)
-
-## point
-correlation_plot = ggplot(correlation, aes(x = wept, y = mean_donation)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(x = "Wept", y = "Donation") +
-  ggtitle("Correlation between Wept and Donation")
-
-## stat
-print(correlation_plot)
 cor(correlation$mean_wept, correlation$mean_donation)
+
+sink()

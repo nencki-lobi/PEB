@@ -16,7 +16,9 @@ SELECT srt.qid, s.sid, s.stid,
 FROM srt
 JOIN qcopy q ON q.qid = srt.qid
 JOIN subject s ON q.rid = s.sid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
+  AND r.status = 0
 GROUP BY srt.qid, s.sid, category;
 
 -- WEPT
@@ -29,8 +31,10 @@ SELECT s.sid, s.stid,
 FROM subject s
 JOIN qcopy q ON q.rid = s.sid
 JOIN weptitem w ON w.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
   AND q.name IN ('wept-pl')
+  AND r.status = 0
 ORDER BY s.stid, s.sid;
 
 -- Donation
@@ -43,8 +47,10 @@ q.name, a.ord, a.val
 FROM subject s
 JOIN qcopy q ON q.rid = s.sid
 JOIN answer a ON a.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
  AND q.name = 'wept-pl'
+ AND r.status = 0
 ORDER BY s.stid, s.sid, a.ord;
 
 -- Questionnaires
@@ -58,8 +64,10 @@ c.ord, c.opt
 FROM subject s
 JOIN qcopy q ON q.rid = s.sid
 JOIN choice c ON c.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
  AND q.name IN ('PCAE-pl', 'PD-pl', 'WTS-pl')
+ AND r.status = 0
 ORDER BY s.sid;
 
 -- Donation Intentions
@@ -73,8 +81,10 @@ c.ord, c.opt
 FROM subject s
 JOIN qcopy q ON q.rid = s.sid
 JOIN choice c ON c.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
  AND q.name ='donation-aim-pl'
+ AND r.status = 0
 ORDER BY s.sid;
 
 -- Story ratings
@@ -88,8 +98,10 @@ b.ord, b.part, b.opt
 FROM subject s
 JOIN qcopy q ON q.rid = s.sid
 JOIN bchoice b ON b.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
  AND q.name ='rateus-pl'
+ AND r.status = 0
 ORDER BY s.sid;
 
 -- Demographic
@@ -103,8 +115,10 @@ a.ord, a.val
 FROM subject s
 JOIN qcopy q ON q.rid = s.sid
 JOIN answer a ON a.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
 WHERE s.stid IN (23)
  AND q.name = 'demo-2-pl'
+ AND r.status = 0
 ORDER BY s.sid;
 
 -- Condition + WEPT
@@ -134,7 +148,8 @@ SELECT c.sid, s.stid, c.category, w.ord, w.mh, w.fh
 FROM condition c
 JOIN weptings w ON c.sid = w.sid
 JOIN subject s ON c.sid = s.sid
+JOIN recruitment r ON r.sid = s.sid
 --JOIN answer a ON s.sid = a.sid
-WHERE s.stid = 23 AND c.category <> 'other'
+WHERE s.stid = 23 AND c.category <> 'other' AND r.status = 0
 ORDER BY c.category;
 

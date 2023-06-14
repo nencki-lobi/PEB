@@ -1,14 +1,23 @@
-summary_stats = demo_transposed %>%
+df = full_join(conditions_filtered, pebs, by = "sid") %>%
+  full_join(demo_transposed, by = 'sid') %>%
+  full_join(ratings_transposed, by = 'sid') %>%
+  full_join(questionnaires_transposed, by = 'sid') %>%
+  select(sid, stid, category.x, int, aim, wept, donation, cPEB, sex, age, gen, res, edu, kid, ses, bcc, ccc, val, aro, hop, com, ang, PCAE_i, PCAE_c, PCAE, PD, WTS)  %>%
+  rename(category = category.x) %>%
+  mutate(emo = ifelse(category == " NEU", 0, 1)) %>%
+  na.omit()
+
+summary_stats = df %>%
   group_by(category)%>%
   na.omit()%>%
   summarise(
-    bcc_mean = mean(bcc),
-    bcc_sd = sd(bcc),
-    ccc_mean = mean(ccc),
-    ccc_sd = sd(ccc)
+    bcc_mean = mean(as.numeric(bcc)),
+    bcc_sd = sd(as.numeric(bcc)),
+    ccc_mean = mean(as.numeric(ccc)),
+    ccc_sd = sd(as.numeric(ccc))
   )
 
-frequencies = demo_transposed %>%
+frequencies = df %>%
   group_by(category) %>%
   summarise(
     sex_freq = list(table(sex)),
@@ -19,9 +28,12 @@ frequencies = demo_transposed %>%
     ses_freq = list(table(ses))
   )
 
-sink("./data/S1/descriptives.txt")
+fdir = fdir.create("Descriptives")
+
+sink("./output/Descriptives/descriptives.txt")
 
 print(summary_stats)
+report(summary_stats)
 
 for (col in names(frequencies)[-1]) {
   cat("\n")
@@ -30,19 +42,3 @@ for (col in names(frequencies)[-1]) {
 }
 
 sink()
-
-
-# Create histogram plots for the variables
-belief = demo_transposed %>%
-  ggplot(aes(x = bcc)) +
-  geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
-  facet_wrap(~category, ncol = 2) +
-  labs(title = "Histogram of bcc", x = "bcc", y = "Frequency")
-
-concern = demo_transposed %>%
-  ggplot(aes(x = ccc)) +
-  geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
-  facet_wrap(~category, ncol = 2) +
-  labs(title = "Histogram of bcc", x = "bcc", y = "Frequency")
-
-
