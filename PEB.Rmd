@@ -13,9 +13,8 @@ library('lavaan')
 
 set.seed(2137) # set seed for replicability
 
-source('./code/01-preprocessing.R', local = knitr::knit_global())
 source('./code/02-helpers.R', local = knitr::knit_global())
+source('./code/01-preprocessing.R', local = knitr::knit_global())
 source('./code/03-statistics.R', local = knitr::knit_global())
 source('./code/04-descriptives.R', local = knitr::knit_global())
-
 ```

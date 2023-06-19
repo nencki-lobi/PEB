@@ -17,62 +17,69 @@ weptings = read.table("./data/S1/peb-weptings.tsv", header = F, skip = 2, sep = 
 colnames(weptings) = c("sid", "stid", "name", "ord", "mh", "fh")
 
 donations = read.table("./data/S1/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
-colnames(donations) = c("sid", "stid", "name", "ord","val")
+colnames(donations) = c("sid", "stid", "name", "ord", "val")
 
-conditions_filtered = conditions %>%
-filter(category != " other")
-
-demo_transposed <- demo %>%
-  pivot_wider(names_from = ord, values_from = val) %>%
-  full_join(conditions_filtered, by = "sid") %>%
+demo_transposed = demo %>%
+  pivot_wider(id_cols = c("sid", "stid"),
+              names_from = "ord", 
+              values_from = "val") %>%
   rename(sex = "0", birth = "2", res = "3", edu = "4", kid = "6", ses = "7", bcc = "8", ccc = "9") %>%
   mutate(birth = as.numeric(birth),  # Convert birth to numeric
+         age = 2023 - birth,
          gen = case_when(
-           between(birth, 1997, 2023) ~ "Z",
+           between(birth, 1997, 2012) ~ "Z",
            between(birth, 1981, 1996) ~ "Y",
            between(birth, 1965, 1980) ~ "X",
            between(birth, 1946, 1964) ~ "Boomer",
            between(birth, 1928, 1945) ~ "Silent",
            TRUE ~ NA_character_
          )) %>%
-  mutate(age = 2023 - birth) %>%
-  select(sid, sex, age, gen, res, edu, kid, ses, bcc, ccc)
+  select(sid, stid, sex, age, gen, res, edu, kid, ses, bcc, ccc)
 
 questionnaires_transposed = questionnaires %>%
-  group_by(sid) %>%
-  mutate(item = paste(sub("(.*?)-.*", "\\1", name), ord, sep = "_"))%>%
-  select (sid, stid, opt, item) %>%
-  pivot_wider(names_from = item, values_from = opt) %>%
-  mutate (PCAE_i = PCAE_0+PCAE_1, PCAE_c = PCAE_2+PCAE_3, PCAE = PCAE_i+PCAE_c, 
-          PD = PD_0 + PD_1, WTS = WTS_0 + WTS_1 + WTS_2 + WTS_3 + WTS_4) %>%
+  pivot_wider(id_cols = c("sid", "stid"),
+              names_from = c("name","ord"), 
+              values_from = "opt", 
+              names_sep = ".") %>%
+  mutate (PCAE_i = `PCAE-pl.0` + `PCAE-pl.1`, 
+          PCAE_c = `PCAE-pl.2` + `PCAE-pl.3`, 
+          PCAE = PCAE_i + PCAE_c, 
+          PD = `PD-pl.0` + `PD-pl.1`, 
+          WTS = `WTS-pl.0` + `WTS-pl.1` + `WTS-pl.2` + `WTS-pl.3` + `WTS-pl.4`) %>%
   select(sid, stid, PCAE_i, PCAE_c, PCAE, PD, WTS)
 
 ratings_transposed = ratings %>%
-  group_by(sid) %>%
-  mutate(category = factor(recode(ord, "0"="ANG", "1"="COM", "2"="HOP", "3"="NEU")),
-         scale = factor(recode(part, "0"="val", "1"="aro", "2"="ang", "3"="com", "4"="hop"))) %>%
-  select(sid, stid, category, scale, opt) %>%
-  pivot_wider(id_cols = c("sid", "stid", "category"),
+  mutate(scale = factor(part_to_scale[as.character(part)], 
+                        levels = labels_scales)) %>%
+  pivot_wider(id_cols = c("sid", "stid"),
               names_from = "scale",
               values_from = "opt")
   
 intentions_transposed = intentions %>%
-  select(sid, ord, opt) %>%
-  pivot_wider(names_from = ord, values_from = opt) %>%
+  pivot_wider(id_cols = c("sid", "stid"),
+              names_from = "ord", 
+              values_from = "opt") %>%
   rename(int = "0", aim = "1") %>%
-  relocate(sid, int, aim)
+  select(sid, stid, int, aim)
 
 weptings_transposed = weptings  %>%
-  mutate(wept = mh + fh < 5) %>%
-  group_by(sid, stid) %>%
-  summarise(wept = n())
+  mutate(correct = mh + fh < 5) %>%
+  group_by(sid, stid, correct) %>%
+  summarise(pages = n()) %>%
+  pivot_wider(id_cols = c("sid", "stid"),
+              names_from = "correct", 
+              values_from = "pages", 
+              values_fill = 0) %>%
+  rename(wept_cor = "TRUE", wept_inc = "FALSE") %>%
+  mutate(wept = wept_cor + wept_inc)
 
-pebs = full_join(weptings_transposed, donations, by = "sid") %>%
-  full_join(conditions_filtered, by = "sid") %>%
-  full_join(intentions_transposed, by = "sid") %>%
-  select("sid", "int", "aim", "wept", "val") %>%
-  rename("donation" = "val") %>%
-  mutate(cPEB = (as.integer(wept)/15 + as.integer(donation)/20) /2)
-# mutate(cPEB = (as.integer(wept)/15 + as.integer(donation)/100) /2) %>%
+donations_transposed = donations %>%
+  rename(donation = val) %>%
+  select(sid, stid, donation)
 
-
+pebs = conditions %>%
+  full_join(intentions_transposed, by = c("sid","stid")) %>%
+  full_join(weptings_transposed, by = c("sid","stid")) %>%
+  full_join(donations_transposed, by = c("sid","stid")) %>%
+  mutate(cPEB = (wept/15 + donation/20) /2)
+  #mutate(cPEB = (wept/15 + donation/100) /2)
