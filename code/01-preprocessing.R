@@ -2,10 +2,10 @@ library('dplyr')
 library('tidyverse')
 
 conditions = read.table("./data/S1/conditions.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
-colnames(conditions) = c("qid", "sid", "stid", "category")
+colnames(conditions) = c("sid", "stid", "category")
 
 demo = read.table("./data/S1/demographic.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(demo) = c("sid","code", "stid", "name", "ord", "val")
+colnames(demo) = c("sid", "stid", "name", "ord", "val")
 
 questionnaires = read.table("./data/S1/questionnaires.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(questionnaires) = c("sid", "stid", "name", "ord", "opt")
@@ -16,11 +16,11 @@ colnames(ratings) = c("sid", "stid", "name", "ord", "part", "opt")
 intentions = read.table("./data/S1/peb-intentions.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(intentions) = c("sid", "stid", "name", "ord", "opt")
 
+weptings = read.table("./data/S1/peb-weptings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
+colnames(weptings) = c("sid", "stid", "name", "ord", "mh", "fh")
+
 donations = read.table("./data/S1/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(donations) = c("sid", "stid", "name", "ord","val")
-
-weptings = read.table("./data/S1/peb-weptings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(weptings) = c("sid", "stid", "ord", "mh", "fh", "name")
 
 conditions_filtered = conditions %>%
 filter(category != " other")
