@@ -44,15 +44,19 @@ anova_result = aov(donation ~ category, data = df)
 summary(anova_result)
 report(anova_result)
 
-#tukey_hsd(donation ~ category, data=df)
+#posthoc_results = TukeyHSD(anova_result)
 
 anova_result = aov(wept ~ category, data = df)
 summary(anova_result)
 report(anova_result)
 
+#posthoc_results = TukeyHSD(anova_result)
+
 anova_result = aov(cPEB ~ category, data = df)
 summary(anova_result)
 report(anova_result)
+
+#posthoc_results = TukeyHSD(anova_result)
 
 #Hypothesis 3
 cat("\n \n Hypothesis 3: chi-square \n \n")
