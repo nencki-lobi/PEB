@@ -6,7 +6,6 @@ params:
 ---
 
 ```{r include=FALSE, echo=FALSE}
-library('dplyr')
 library('tidyverse')
 library('ggplot2')
 library('report')

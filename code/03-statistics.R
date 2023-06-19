@@ -1,7 +1,3 @@
-library('ggplot2')
-library('report')
-library('lavaan')
-
 odir = "./output"
 if (!dir.exists(odir)) {dir.create(odir)}
 

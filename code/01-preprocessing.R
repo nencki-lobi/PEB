@@ -1,6 +1,3 @@
-library('dplyr')
-library('tidyverse')
-
 conditions = read.table("./data/S1/conditions.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(conditions) = c("sid", "stid", "category")
 

@@ -1,5 +1,3 @@
-library(ggplot2)
-
 fdir = fdir.create("H1")
 
 #Hypothesis 1
