@@ -1,22 +1,22 @@
-conditions = read.table("./data/S1/conditions.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
+conditions = read.table("./data/conditions.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(conditions) = c("sid", "stid", "category")
 
-demo = read.table("./data/S1/demographic.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
+demo = read.table("./data/demographic.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(demo) = c("sid", "stid", "name", "ord", "val")
 
-questionnaires = read.table("./data/S1/questionnaires.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
+questionnaires = read.table("./data/questionnaires.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(questionnaires) = c("sid", "stid", "name", "ord", "opt")
 
-ratings = read.table("./data/S1/story-ratings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
+ratings = read.table("./data/story-ratings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(ratings) = c("sid", "stid", "name", "ord", "part", "opt")
 
-intentions = read.table("./data/S1/peb-intentions.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
+intentions = read.table("./data/peb-intentions.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(intentions) = c("sid", "stid", "name", "ord", "opt")
 
-weptings = read.table("./data/S1/peb-weptings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
+weptings = read.table("./data/peb-weptings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(weptings) = c("sid", "stid", "name", "ord", "mh", "fh")
 
-donations = read.table("./data/S1/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
+donations = read.table("./data/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(donations) = c("sid", "stid", "name", "ord", "val")
 
 demo_transposed = demo %>%

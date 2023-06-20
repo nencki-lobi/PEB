@@ -36,23 +36,32 @@ report(manova_result)
 #Hypothesis 2
 cat("\n \n Hypothesis 2: ANOVA \n \n")
 
+cat("\n \n ANOVA Donation \n \n")
 anova_result = aov(donation ~ category, data = df)
 summary(anova_result)
 report(anova_result)
 
-#posthoc_results = TukeyHSD(anova_result)
+cat("\n \n Posthoc Donation \n \n")
+posthoc_result = TukeyHSD(anova_result)
+print(posthoc_result)
 
+cat("\n \n ANOVA WEPT \n \n")
 anova_result = aov(wept ~ category, data = df)
 summary(anova_result)
 report(anova_result)
 
-#posthoc_results = TukeyHSD(anova_result)
+cat("\n \n Posthoc WEPT \n \n")
+posthoc_result = TukeyHSD(anova_result)
+print(posthoc_result)
 
+cat("\n \n ANOVA cPEB \n \n")
 anova_result = aov(cPEB ~ category, data = df)
 summary(anova_result)
 report(anova_result)
 
-#posthoc_results = TukeyHSD(anova_result)
+cat("\n \n Posthoc cPEB \n \n")
+posthoc_result = TukeyHSD(anova_result)
+print(posthoc_result)
 
 #Hypothesis 3
 cat("\n \n Hypothesis 3: chi-square \n \n")
@@ -68,63 +77,67 @@ chi_square_test
 cat("\n \n Hypothesis 4: regression models \n \n")
 
 #cPEB
+cat("\n \n Model for cPEB \n \n")
 model = lm(cPEB ~ category + category:sex + category:age + category:res + category:edu + category:kid + category:ses +
-category:bcc + category:ccc + category:val + category:aro + category:PCAE + category:PD + category:WTS, data = df) 
+category:bcc + category:ccc + category:valence + category:arousal + category:PCAE + category:PD + category:WTS, data = df) 
 report(model)
 summary(model)
 
 #wept
+cat("\n \n Model for WEPT \n \n")
 model = lm(wept ~ category + category:sex + category:age + category:res + category:edu + category:kid + category:ses +
-             category:bcc + category:ccc + category:val + category:aro + category:PCAE + category:PD + category:WTS, data = df) 
-report(model)
+             category:bcc + category:ccc + category:valence + category:arousal + category:PCAE + category:PD + category:WTS, data = df) 
+#report(model)
 summary(model)
 
 #donation
+cat("\n \n Model for donation \n \n")
 model = lm(donation ~ category + category:sex + category:age + category:res + category:edu + category:kid + category:ses +
-             category:bcc + category:ccc + category:val + category:aro + category:PCAE + category:PD + category:WTS, data = df) 
-report(model)
+             category:bcc + category:ccc + category:valence + category:arousal + category:PCAE + category:PD + category:WTS, data = df) 
+#report(model)
 summary(model)
 
 ##unregistered analyses
 cat("\n \n Hypothesis 4: unregisterd models \n \n")
+##no interaction effects
 model = lm(cPEB ~ sex + age + res + edu + kid + ses +
-             bcc + ccc + val + aro + PCAE + PD + WTS, data = df)
+             bcc + ccc + valence + arousal + PCAE + PD + WTS, data = df)
 
+## only age and interation with age
 model = lm(cPEB ~ category + age + category:age, data = df) 
 
-model = lm(donation ~ category + category:int + category:aim + category:sex + category:age + category:res + category:edu + category:kid + category:ses +
-             category:bcc + category:ccc + category:val + category:aro + category:ang + category:hop + category:com + category:PCAE + category:PCAE_i + category:PCAE_c  + category:PD + category:WTS, data = df) 
-
-model = lm(donation ~ category + category:int + category:aim, data = df)
-
-  
+## SEM no interactions
+cat("\n \n  SEM 1: This model assumes a linear relationship between the dependent variable (donation and wept) and the independent variables (category, sex, age, etc.), without considering any interaction effects. \n \n")
 model = '
 donation ~ category + sex + age + res + edu + kid + ses +
-             bcc + ccc + val + aro + PCAE + PD + WTS
+             bcc + ccc + valence + arousal + PCAE + PD + WTS
 wept ~ category + sex + age + res + edu + kid + ses +
-             bcc + ccc + val + aro + PCAE + PD + WTS
+             bcc + ccc + valence + arousal + PCAE + PD + WTS
 
 donation ~~ wept
 
 category ~ sex + age + res + edu + kid + ses +
-             bcc + ccc + val + aro + PCAE + PD + WTS
+             bcc + ccc + valence + arousal + PCAE + PD + WTS
 '
 
 fit = sem(model, data = df)
 summary(fit, standardized = TRUE)
 
+## SEM interactions
+cat("\n \n  SEM 2: This model includes interaction terms (category * sex, category * age, etc.) in the equations for both donation and wept. This means that it investigates moderators between PEBs and category. \n \n")
+
 model = '
 donation ~ category * sex + category * age + category * res + category * edu +
              category * kid + category * ses + category * bcc + category * ccc +
-             category * val + category * aro + category * PCAE + category * PD + category * WTS
+             category * valence + category * arousal + category * PCAE + category * PD + category * WTS
 wept ~ category * sex + category * age + category * res + category * edu +
              category * kid + category * ses + category * bcc + category * ccc +
-             category * val + category * aro + category * PCAE + category * PD + category * WTS
+             category * valence + category * arousal + category * PCAE + category * PD + category * WTS
 
 donation ~~ wept
 
 category ~ sex + age + res + edu + kid + ses +
-             bcc + ccc + val + aro + PCAE + PD + WTS
+             bcc + ccc + valence + arousal + PCAE + PD + WTS
 '
 
 fit = sem(model, data = df)
