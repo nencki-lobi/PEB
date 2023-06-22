@@ -17,4 +17,5 @@ source('./code/02-helpers.R', local = knitr::knit_global())
 source('./code/01-preprocessing.R', local = knitr::knit_global())
 source('./code/03-statistics.R', local = knitr::knit_global())
 source('./code/04-descriptives.R', local = knitr::knit_global())
+source('./code/05-figures.R', local = knitr::knit_global())
 ```

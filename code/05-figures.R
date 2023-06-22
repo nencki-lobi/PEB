@@ -95,24 +95,53 @@ p = correlation_plot = ggplot(correlation, aes(x = wept, y = mean_donation)) +
   ggtitle("Correlation between Wept and Donation")
 ggsave("Correlation-WEPT-donation-point.png", p, width = 10, height = 10, path = fdir)
 
-# Manipulation check
+# Manipulation check - unregistered
 
-manipulation_check = conditions %>%
-  full_join(ratings, by = c("sid","stid")) %>%
-  select(sid, category, part, opt) %>%
-  group_by(category)
-
-p = ggplot(manipulation_check, aes(x=category, y=opt, colour=category)) + 
-  geom_point() +
-  xlab("Condition") + ylab("Mean ratings") +
-  facet_wrap(~part, ncol = 5, labeller = as_labeller(part_to_scale))
-ggsave("Manipulation_check_1.png", p, width = 20, height = 10, path = fdir)
+##All participants
 
 p = ggplot(manipulation_check, aes(x=sid, y=opt, colour=category)) + 
   geom_point() +
-  xlab("Participant") + ylab("Mean ratings") +
+  xlab("Participant") + ylab("Ratings") +
   facet_grid(category ~ part, labeller = as_labeller(part_to_scale))
+ggsave("Manipulation_check_1.png", p, width = 20, height = 10, path = fdir)
+
+p = ggplot(manipulation_check, aes(x=opt)) + 
+  geom_histogram(binwidth = 10, fill = "steelblue", color = "white") +
+  xlab("Rating on emotion rating scale") + ylab("Frequency") +
+  xlim(c(-1,100)) + ylim(c(-1,60)) +
+  facet_grid(category ~ part, labeller = labeller(part = as_labeller(part_to_scale), 
+                                                  category = as_labeller(labels_conditions)))
 ggsave("Manipulation_check_2.png", p, width = 20, height = 10, path = fdir)
+
+##soft filter manipulation check
+
+p = ggplot(soft_check, aes(x=sid, y=opt, colour=category)) + 
+  geom_point() +
+  xlab("Participant") + ylab("Ratings") +
+  facet_grid(category ~ part, labeller = as_labeller(part_to_scale))
+ggsave("soft_filter_group_1.png", p, width = 20, height = 10, path = fdir)
+
+p = ggplot(soft_check, aes(x=opt)) + 
+  geom_histogram(binwidth = 10, fill = "steelblue", color = "white") +
+  xlab("Rating on emotion rating scale") + ylab("Frequency") +
+  xlim(c(-1,100)) + ylim(c(-1,60)) +
+  facet_grid(category ~ part, labeller = labeller(part = as_labeller(part_to_scale), 
+                                                  category = as_labeller(labels_conditions)))
+
+##hard filter manipulation check
+p = ggplot(hard_check, aes(x=sid, y=opt, colour=category)) + 
+  geom_point() +
+  xlab("Participant") + ylab("Ratings") +
+  facet_grid(category ~ part, labeller = as_labeller(part_to_scale))
+ggsave("hard_filter_group_1.png", p, width = 20, height = 10, path = fdir)
+
+p = ggplot(hard_check, aes(x=opt)) + 
+  geom_histogram(binwidth = 10, fill = "steelblue", color = "white") +
+  xlab("Rating on emotion rating scale") + ylab("Frequency") +
+  xlim(c(-1,100)) + ylim(c(-1,60)) +
+  facet_grid(category ~ part, labeller = labeller(part = as_labeller(part_to_scale), 
+                                                  category = as_labeller(labels_conditions)))
+ggsave("hard_filter_group_2.png", p, width = 20, height = 10, path = fdir)
 
 # Descriptives
 
@@ -127,23 +156,14 @@ concern = df %>%
   ggplot(aes(x = as.numeric(ccc))) +
   geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
   facet_wrap(~category, ncol = 2) +
-  labs(title = "Histogram of ccc", x = "bcc", y = "Frequency")
+  labs(title = "Histogram of ccc", x = "ccc", y = "Frequency")
 ggsave("concern.png", concern, width = 10, height = 10, path = "./output/Descriptives")
-
-generation = df %>%
-  ggplot(aes(x = as.numeric(gen))) +
-  geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
-  facet_wrap(~category, ncol = 2) +
-  labs(title = "Histogram of gen", x = "bcc", y = "Frequency")
-ggsave("generation.png", concern, width = 10, height = 10, path = "./output/Descriptives")
 
 socio_status = df %>%
   ggplot(aes(x = as.numeric(ses))) +
   geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
   facet_wrap(~category, ncol = 2) +
-  labs(title = "Histogram of ses", x = "bcc", y = "Frequency")
-ggsave("sociostatus.png", concern, width = 10, height = 10, path = "./output/Descriptives")
-
-# Manipulation Check - unregistered
+  labs(title = "Histogram of ses", x = "ses", y = "Frequency")
+ggsave("sociostatus.png", socio_status, width = 10, height = 10, path = "./output/Descriptives")
 
 

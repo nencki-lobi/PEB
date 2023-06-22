@@ -83,3 +83,37 @@ pebs = conditions %>%
   full_join(donations_transposed, by = c("sid","stid")) %>%
   mutate(cPEB = (wept/15 + donation/20) /2)
   #mutate(cPEB = (wept/15 + donation/100) /2)
+
+df = full_join(conditions, pebs, by = "sid") %>%
+  full_join(demo_transposed, by = 'sid') %>%
+  full_join(ratings_transposed, by = 'sid') %>%
+  full_join(questionnaires_transposed, by = 'sid') %>%
+  select(sid, stid, category.x, int, aim, wept, donation, cPEB, sex, age, gen, res, edu, kid, ses, bcc, ccc, valence, arousal, anger, compassion, hope, PCAE_i, PCAE_c, PCAE, PD, WTS)  %>%
+  rename(category = category.x) %>%
+  mutate(emo = ifelse(category == " NEU", 0, 1)) %>%
+  na.omit()
+
+s_df = df %>%
+  mutate(category = trimws(category)) %>%
+  filter(category == "ANG" & as.numeric(anger) > 50 |
+           category == "COM" & as.numeric(compassion) > 50 |
+           category == "HOP" & as.numeric(hope) > 50 |
+           category == "NEU" & as.numeric(arousal) < 50)
+
+h_df = df %>%
+  mutate(category = trimws(category)) %>%
+  filter(category == "ANG" & as.numeric(anger) > 50 & as.numeric(arousal) > 50 |
+           category == "COM" & as.numeric(compassion) > 50 & as.numeric(arousal) > 50 |
+           category == "HOP" & as.numeric(hope) > 50 & as.numeric(arousal) > 50|
+           category == "NEU" & as.numeric(arousal) < 50)
+
+manipulation_check = conditions %>%
+  full_join(ratings, by = c("sid","stid")) %>%
+  select(sid, category, part, opt) %>%
+  group_by(category)
+
+soft_check = manipulation_check %>%
+  filter(sid %in% s_df$sid)
+
+hard_check = manipulation_check %>%
+  filter(sid %in% h_df$sid)

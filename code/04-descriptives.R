@@ -1,12 +1,3 @@
-df = full_join(conditions, pebs, by = "sid") %>%
-  full_join(demo_transposed, by = 'sid') %>%
-  full_join(ratings_transposed, by = 'sid') %>%
-  full_join(questionnaires_transposed, by = 'sid') %>%
-  select(sid, stid, category.x, int, aim, wept, donation, cPEB, sex, age, gen, res, edu, kid, ses, bcc, ccc, valence, arousal, anger, compassion, hope, PCAE_i, PCAE_c, PCAE, PD, WTS)  %>%
-  rename(category = category.x) %>%
-  mutate(emo = ifelse(category == " NEU", 0, 1)) %>%
-  na.omit()
-
 summary_stats = df %>%
   group_by(category)%>%
   na.omit()%>%
