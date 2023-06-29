@@ -16,7 +16,9 @@ frequencies = df %>%
     res_freq = list(table(res)),
     edu_freq = list(table(edu)),
     kid_freq = list(table(kid)),
-    ses_freq = list(table(ses))
+    ses_freq = list(table(ses)),
+    bcc_freq = list(table(bcc)),
+    ccc_freq = list(table(ccc))
   )
 
 fdir = fdir.create("Descriptives")

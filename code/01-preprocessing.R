@@ -107,6 +107,13 @@ h_df = df %>%
            category == "HOP" & as.numeric(hope) > 50 & as.numeric(arousal) > 50|
            category == "NEU" & as.numeric(arousal) < 50)
 
+inv_df = df %>%
+  mutate(category = trimws(category)) %>%
+  filter(category == "ANG" & as.numeric(anger) < 50 |
+           category == "COM" & as.numeric(compassion) < 50 |
+           category == "HOP" & as.numeric(hope) < 50 |
+           category == "NEU" & as.numeric(arousal) > 50)
+
 manipulation_check = conditions %>%
   full_join(ratings, by = c("sid","stid")) %>%
   select(sid, category, part, opt) %>%
@@ -117,3 +124,11 @@ soft_check = manipulation_check %>%
 
 hard_check = manipulation_check %>%
   filter(sid %in% h_df$sid)
+
+inverse_check = manipulation_check %>%
+  filter(sid %in% inv_df$sid)
+
+#How many people were excluded in inv_df per category
+counts = inv_df %>%
+  group_by(category) %>%
+  summarize(count = n())
