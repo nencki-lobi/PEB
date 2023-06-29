@@ -63,6 +63,27 @@ percentages_aim
 chi_square_test = chisq.test(df$aim, df$category)
 chi_square_test
 
+#Donation aim preference in comparison to NEU as baseline
+cat("\n \n Donation aim preference in comparison to NEU as baseline \n \n")
+ANG_freq = c(28.488372, 28.488372, 39.534884, 3.488372)
+COM_freq = c(20.689655, 38.505747, 33.908046, 6.896552)
+HOP_freq = c(14.285714, 36.904762, 41.666667, 7.142857)
+NEU_freq = c(20, 34.285714, 40, 5.714286)
+expected = NEU_freq / sum(NEU_freq)
+
+observed_list = list(ANG_freq, COM_freq, HOP_freq)
+results = list()
+
+for (observed in observed_list) {
+  result = chisq.test(observed, p = expected)
+  results = c(results, list(result))
+}
+
+for (i in seq_along(results)) {
+  cat("Test", i, ":\n")
+  print(results[[i]])
+  cat("\n")
+}
 #Hypothesis 4
 
 cat("\n \n Hypothesis 4: regression models \n \n")
