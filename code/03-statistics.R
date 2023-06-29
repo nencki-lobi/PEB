@@ -167,4 +167,25 @@ correlation = df %>%
 
 cor(correlation$mean_wept, correlation$mean_donation)
 
+## Correlation of gen/age and cPEB
+
+cat("\n \n Number of participants from each generation \n \n")
+counts = df %>%
+  group_by(gen) %>%
+  summarize(count = n())
+counts
+
+### Gen
+cat("\n \n Correlation between generation and cPEB \n \n")
+test = aov(donation ~ gen, data=df)
+summary(test)
+TukeyHSD(test)
+report(test)
+
+### Age
+cat("\n \n Correlation between age and cPEB \n \n")
+test= lm(cPEB ~ age, data = df)
+summary(test)
+report(test)
+
 sink()

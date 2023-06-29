@@ -98,6 +98,29 @@ p = ggplot(df, aes(x = wept, y = donation)) +
   labs(x = "Wept", y = "Donation") +
   ggtitle("F3-Cor-WEPT-donation")
 
+## Correlation between Gen and cPEB
+
+means = aggregate(df$cPEB, by=list(df$gen), FUN=mean) %>%
+  filter(Group.1 !='Silent')
+colnames(means) = c("gen", "mean_cPEB")
+
+p = ggplot(data = means, aes(x = gen, y = mean_cPEB)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Mean Group Differences",
+       x = "Gen",
+       y = "Mean cPEB")
+ggsave("F4-gen_cPEB.png", p, width = 10, height = 10, path = fdir)
+
+## Correlation between Age and cPEB
+
+p = ggplot(data = df, aes(x = age, y = cPEB)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Relationship between cPEB and Age",
+       x = "Age",
+       y = "cPEB")
+ggsave("F5-age_cPEB.png", p, width = 10, height = 10, path = fdir)
+
 # Manipulation check - unregistered
 
 ##All participants
