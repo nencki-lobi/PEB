@@ -10,6 +10,7 @@ library('tidyverse')
 library('ggplot2')
 library('report')
 library('lavaan')
+library('car')
 
 set.seed(2137) # set seed for replicability
 

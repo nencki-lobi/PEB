@@ -5,7 +5,18 @@ summary_stats = df %>%
     bcc_mean = mean(as.numeric(bcc)),
     bcc_sd = sd(as.numeric(bcc)),
     ccc_mean = mean(as.numeric(ccc)),
+    ccc_sd = sd(as.numeric(ccc)),
+    val_mean = mean(as.numeric(valence)),
+    val_sd = sd(as.numeric(valence)),
+    aro_mean = mean(as.numeric(arousal)),
+    aro_sd = sd(as.numeric(arousal)),
+    anger_mean = mean(as.numeric(anger)),
+    anger_sd = sd(as.numeric(anger)),
+    compassion_mean = mean(as.numeric(compassion)),
+    compassion_sd = sd(as.numeric(compassion)),
+    ccc_mean = mean(as.numeric(ccc)),
     ccc_sd = sd(as.numeric(ccc))
+
   )
 
 frequencies = df %>%
@@ -18,7 +29,12 @@ frequencies = df %>%
     kid_freq = list(table(kid)),
     ses_freq = list(table(ses)),
     bcc_freq = list(table(bcc)),
-    ccc_freq = list(table(ccc))
+    ccc_freq = list(table(ccc)),
+    pcae_i_freq = list(table(PCAE_i)),
+    pcae_c_freq = list(table(PCAE_c)),
+    pcae_freq = list(table(PCAE)),
+    pd_freq = list(table(PD)),
+    wts_freq = list(table(WTS)),
   )
 
 fdir = fdir.create("Descriptives")

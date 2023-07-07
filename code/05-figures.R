@@ -1,6 +1,8 @@
 fdir = fdir.create("Figures")
 
 #Hypothesis 1
+df$category = as.factor(df$category)
+
 
 summary_df = aggregate(donation ~ emo, data = df, FUN = function(x) c(mean = mean(x), sd = sd(x)))
   
@@ -185,6 +187,22 @@ p = ggplot(inverse_check, aes(x=opt)) +
   facet_grid(category ~ part, labeller = labeller(part = as_labeller(part_to_scale), 
                                                   category = as_labeller(labels_conditions)))
 ggsave("C8-Inverse_check_bar.png", p, width = 20, height = 10, path = fdir)
+
+# Reading time check - unregisterd
+
+# Create bins for observations with at least 100 bins
+num_bins = max(ceiling((max(time_check$time) - min(time_check$time)) / 100), 1)
+
+# Plot histogram
+p = time_check %>%
+  ggplot(aes(x = time)) +
+  geom_histogram(binwidth = (max(time_check$time) - min(time_check$time)) / num_bins,
+                 color = "steelblue") +
+  facet_wrap(~ category, ncol = 2) +
+  labs(title = "Histogram of rating times", x = "time in miliseconds", y = "Frequency")
+ggsave("C9-times.png", p, width = 10, height = 10, path = "./output/Unregistered")
+
+
 
 # Descriptives
 

@@ -19,6 +19,9 @@ colnames(weptings) = c("sid", "stid", "name", "ord", "mh", "fh")
 donations = read.table("./data/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(donations) = c("sid", "stid", "name", "ord", "val")
 
+times = read.table("./data/rating_times.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
+colnames(times) = c("sid", "stid", "code", "time")
+
 demo_transposed = demo %>%
   pivot_wider(id_cols = c("sid", "stid"),
               names_from = "ord", 
@@ -84,30 +87,34 @@ pebs = conditions %>%
   mutate(cPEB = (wept/15 + donation/20) /2)
   #mutate(cPEB = (wept/15 + donation/100) /2)
 
-df = full_join(conditions, pebs, by = "sid") %>%
+full_df = full_join(conditions, pebs, by = "sid") %>%
   full_join(demo_transposed, by = 'sid') %>%
   full_join(ratings_transposed, by = 'sid') %>%
   full_join(questionnaires_transposed, by = 'sid') %>%
   select(sid, stid, category.x, int, aim, wept, donation, cPEB, sex, age, gen, res, edu, kid, ses, bcc, ccc, valence, arousal, anger, compassion, hope, PCAE_i, PCAE_c, PCAE, PD, WTS)  %>%
   rename(category = category.x) %>%
   mutate(emo = ifelse(category == " NEU", 0, 1)) %>%
-  na.omit()
+  #optional - can delete gender other observation (1 obs)
+  subset(sex != "2") %>%
+  na.omit() %>%
+  #optional - combine levels in residence (only 5 obs with level 4, can't estimate the predictor level in the models later)
+  mutate(res = ifelse(res == "4", "3", res))
 
-s_df = df %>%
+s_df = full_df %>%
   mutate(category = trimws(category)) %>%
   filter(category == "ANG" & as.numeric(anger) > 50 |
            category == "COM" & as.numeric(compassion) > 50 |
            category == "HOP" & as.numeric(hope) > 50 |
            category == "NEU" & as.numeric(arousal) < 50)
 
-h_df = df %>%
+h_df = full_df %>%
   mutate(category = trimws(category)) %>%
   filter(category == "ANG" & as.numeric(anger) > 50 & as.numeric(arousal) > 50 |
            category == "COM" & as.numeric(compassion) > 50 & as.numeric(arousal) > 50 |
            category == "HOP" & as.numeric(hope) > 50 & as.numeric(arousal) > 50|
            category == "NEU" & as.numeric(arousal) < 50)
 
-inv_df = df %>%
+inv_df = full_df %>%
   mutate(category = trimws(category)) %>%
   filter(category == "ANG" & as.numeric(anger) < 50 |
            category == "COM" & as.numeric(compassion) < 50 |
@@ -132,3 +139,17 @@ inverse_check = manipulation_check %>%
 counts = inv_df %>%
   group_by(category) %>%
   summarize(count = n())
+
+## Reading time exclusion
+
+mean_time = mean(times$time)
+sd_time = sd(times$time)
+min_time = 5000
+
+time_check = full_join(conditions, times, by = "sid") %>%
+  select(sid, category, time) %>%
+  filter(time <= mean_time + 2 * sd_time) %>%
+  filter(time > min_time)
+
+time_df = full_df %>%
+  filter(sid %in% time_check$sid)

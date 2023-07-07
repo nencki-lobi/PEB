@@ -107,3 +107,16 @@ WHERE s.stid IN (23)
     AND r.status = 0
     AND q.name = 'wept-pl'
 ORDER BY s.stid, s.sid;
+
+\o ./data/rating_times.tsv
+
+SELECT s.sid, s.stid, q.name, AVG(srt.time) AS time
+FROM subject s
+JOIN qcopy q ON q.rid = s.sid
+JOIN srt ON srt.qid = q.qid
+JOIN recruitment r ON r.sid = s.sid
+WHERE s.stid IN (23)
+    AND r.status = 0
+    AND NOT srt.code = 'eval'
+GROUP BY s.sid, q.name
+ORDER BY s.sid;
