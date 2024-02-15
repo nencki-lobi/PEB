@@ -1,5 +1,14 @@
 fdir = fdir.create("Figures")
 
+conf_int = function(x) {
+  mean_val = mean(x)
+  n = length(x)
+  se = sd(x) / sqrt(n)
+  margin_of_error = qnorm(0.975) * se  # for 95% confidence interval
+  
+  return(c(mean = mean_val, lower = mean_val - margin_of_error, upper = mean_val + margin_of_error))
+}
+
 #Hypothesis 1
 df$category = as.factor(df$category)
 
@@ -32,6 +41,16 @@ p = ggplot(summary_df, aes(x = factor(emo), y = cPEB[,"mean"])) +
   xlab("Emo") + ylab("Mean cPEB")
 ggsave("H1-M-cPEB.png", p, width = 10, height = 10, path = fdir)
 
+summary_df = aggregate(cPEB ~ emo, data = df, FUN = conf_int)
+
+p = ggplot(summary_df, aes(x = factor(emo), y = cPEB[,"mean"])) +
+  geom_bar(stat = "identity", fill = "#f08232", width = 0.6) +
+  geom_errorbar(aes(ymin = cPEB[, "lower"], ymax = cPEB[, "upper"]), 
+                position = position_dodge(0.9), width = 0.25) +
+  xlab("Emo") + ylab("Mean cPEB") +
+  theme_minimal()
+ggsave("H1-M-cPEB-CI.png", p, width = 10, height = 10, path = fdir)
+
 #Hypothesis 2
 
 ##median
@@ -56,15 +75,49 @@ summary_df = aggregate(donation ~ category, data = df, FUN = function(x) c(mean 
 
 p = ggplot(summary_df, aes(x=category, y=donation[,"mean"], fill=category)) +
   geom_bar(stat = "identity") +
-  xlab("Category") + ylab("Mean donation")
+  geom_errorbar(aes(ymin = donation[, "mean"] - donation[, "sd"], ymax = donation[, "mean"] + donation[, "sd"]), 
+                position = position_dodge(0.9), width = 0.25) +
+  xlab("Category") + ylab("Mean donation [PLN]") + 
+  scale_fill_manual(values = colors)
 ggsave("H2-M-donation.png", p, width = 10, height = 10, path = fdir)
+
+
+summary_df = aggregate(donation ~ category, data = df, FUN = conf_int)
+
+# Plotting with confidence intervals
+p = ggplot(summary_df, aes(x = category, y = donation[, "mean"], fill = category)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = donation[, "lower"], ymax = donation[, "upper"]), 
+                position = position_dodge(0.9), width = 0.25) +
+  xlab("Category") + ylab("Mean donation [PLN]") + 
+  scale_fill_manual(values = colors) +
+  theme_minimal()
+ggsave("H2-M-donation-CI.png", p, width = 10, height = 10, path = fdir)
+
+
 
 summary_df = aggregate(wept ~ category, data = df, FUN = function(x) c(mean = mean(x), sd = sd(x)))
 
 p = ggplot(summary_df, aes(x=category, y=wept[,"mean"], fill=category)) +
   geom_bar(stat = "identity") +
-  xlab("Category") + ylab("Completed WEPT pages")
+  geom_errorbar(aes(ymin = wept[, "mean"] - wept[, "sd"], ymax = wept[, "mean"] + wept[, "sd"]), 
+                position = position_dodge(0.9), width = 0.25) +
+  xlab("Category") + ylab("Completed WEPT pages") +
+  scale_fill_manual(values = colors, name = "Condition", labels = c("Neutral", "Anger", "Compassion", "Hope"))
 ggsave("H2-M-WEPT.png", p, width = 10, height = 10, path = fdir)
+
+
+summary_df = aggregate(wept ~ category, data = df, FUN = conf_int)
+
+p = ggplot(summary_df, aes(x=category, y=wept[,"mean"], fill=category)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = wept[, "lower"], ymax = wept[, "upper"]), 
+                position = position_dodge(0.9), width = 0.25) +
+  xlab("Category") + ylab("Completed WEPT pages") +
+  scale_fill_manual(values = colors, name = "Condition", labels = c("Neutral", "Anger", "Compassion", "Hope")) +
+  theme_minimal()
+
+ggsave("H2-M-WEPT-CI.png", p, width = 10, height = 10, path = fdir)
 
 summary_df = aggregate(cPEB ~ category, data = df, FUN = function(x) c(mean = mean(x), sd = sd(x)))
 

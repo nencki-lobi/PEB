@@ -1,3 +1,5 @@
+library('tidyverse')
+
 conditions = read.table("./data/conditions.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(conditions) = c("sid", "stid", "category")
 
@@ -10,9 +12,6 @@ colnames(questionnaires) = c("sid", "stid", "name", "ord", "opt")
 ratings = read.table("./data/story-ratings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(ratings) = c("sid", "stid", "name", "ord", "part", "opt")
 
-times = read.table("./data/story-times.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
-colnames(times) = c("sid", "stid", "code", "reading", "evaluation")
-
 intentions = read.table("./data/peb-intentions.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
 colnames(intentions) = c("sid", "stid", "name", "ord", "opt")
 
@@ -21,6 +20,9 @@ colnames(weptings) = c("sid", "stid", "name", "ord", "mh", "fh")
 
 donations = read.table("./data/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
 colnames(donations) = c("sid", "stid", "name", "ord", "val")
+
+times = read.table("./data/rating_times.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
+colnames(times) = c("sid", "stid", "code", "time")
 
 demo_transposed = demo %>%
   pivot_wider(id_cols = c("sid", "stid"),

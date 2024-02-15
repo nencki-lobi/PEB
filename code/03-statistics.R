@@ -10,8 +10,8 @@ fdir = fdir.create("Statistics")
 
 #Select dataset for statistical analyses
 
- df = full_df #unfiltered data (as preregistered)
-# df = s_df #soft-filtered data - relevant distinct emotion ratings > 50, arousal rating for NEU > 50
+# df = full_df #unfiltered data (as preregistered)
+ df = s_df #soft-filtered data - relevant distinct emotion ratings > 50, arousal rating for NEU > 50
 # df = h_df #hard-filtered data - relevant distinct emotion ratings > 50 AND arousal rating  > 50
 # df = inv_df #data filtered out with soft filter (relevant emotion ratings < 50, arousal rating for NEU < 50 )
 # df = time_df #data filtered by reading time - adjustable parameters in 01-preprocessing.R
@@ -20,8 +20,17 @@ output = function(content) {
   output = capture.output(content)
   cat(output, sep = "\n")
 } 
- 
+
+
 sink("./output/Statistics/statistics.txt")
+
+
+df %>%
+  group_by(category) %>%
+  summarise_at(
+    vars(aim, wept, donation, cPEB),
+    list(mean = mean, sd = sd, min = min, median = median, max = max, n = length)
+  )
 
 #Hypothesis 1
 cat("\n \n Hypothesis 1: t-test \n \n")
@@ -105,7 +114,7 @@ cat("\n \n Hypothesis 4: regression models \n \n")
 
 # NEU as baseline (intercept)
 df$category = factor(df$category, ordered = FALSE)
-df$category = relevel(df$category, ref = " NEU")
+df$category = relevel(df$category, ref = "NEU")
 
 #cPEB
 model = lm(cPEB ~ category + category:sex + category:age + category:res + category:edu + category:kid + category:ses +
