@@ -9,7 +9,7 @@ Zaremba, D., Marczak, M., Michałowski, J., Klöckner, C.A., Wierzba, M., & Marc
 Data can be obtained directly from the SQL database by running the following command:
 
 ```
-psql -U grieg -d grieg --file code/peb.sql
+psql -U grieg -d grieg --csv --file code/peb.sql
 ```
 
 ## Requirements

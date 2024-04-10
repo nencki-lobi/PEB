@@ -1,28 +1,13 @@
 library('tidyverse')
 
-conditions = read.table("./data/conditions.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
-colnames(conditions) = c("sid", "stid", "category")
-
-demo = read.table("./data/demographic.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(demo) = c("sid", "stid", "name", "ord", "val")
-
-questionnaires = read.table("./data/questionnaires.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(questionnaires) = c("sid", "stid", "name", "ord", "opt")
-
-ratings = read.table("./data/story-ratings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(ratings) = c("sid", "stid", "name", "ord", "part", "opt")
-
-intentions = read.table("./data/peb-intentions.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(intentions) = c("sid", "stid", "name", "ord", "opt")
-
-weptings = read.table("./data/peb-weptings.tsv", header = F, skip = 2, sep = "|", strip.white = T, encoding = "UTF-8")
-colnames(weptings) = c("sid", "stid", "name", "ord", "mh", "fh")
-
-donations = read.table("./data/peb-donations.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
-colnames(donations) = c("sid", "stid", "name", "ord", "val")
-
-times = read.table("./data/rating_times.tsv", header = F, skip = 2, sep = "|", encoding = "UTF-8")
-colnames(times) = c("sid", "stid", "code", "time")
+conditions = read.table("./data/conditions.csv", header = T, sep = ",", encoding = "UTF-8")
+demo = read.table("./data/demographic.csv", header = T, sep = ",", encoding = "UTF-8")
+questionnaires = read.table("./data/questionnaires.csv", header = T, sep = ",", encoding = "UTF-8")
+ratings = read.table("./data/story-ratings.csv", header = T, sep = ",", encoding = "UTF-8")
+intentions = read.table("./data/peb-intentions.csv", header = T, sep = ",", encoding = "UTF-8")
+weptings = read.table("./data/peb-weptings.csv", header = T, sep = ",", encoding = "UTF-8")
+donations = read.table("./data/peb-donations.csv", header = T, sep = ",", encoding = "UTF-8")
+times = read.table("./data/story-times.csv", header = T, sep = ",", encoding = "UTF-8")
 
 demo_transposed = demo %>%
   pivot_wider(id_cols = c("sid", "stid"),
