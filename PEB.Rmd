@@ -2,21 +2,31 @@
 title: "Impact of emotions on proenvironmental behaviours"
 output: html_document
 params:
-  studies: c(23,24)
+  country: "PL" # PL - Poland, NO - Norway
 ---
 
 ```{r include=FALSE, echo=FALSE}
+library('Rmisc')
 library('tidyverse')
+library('psych')
 library('ggplot2')
 library('report')
 library('lavaan')
 library('car')
+library('gtsummary')
 
 set.seed(2137) # set seed for replicability
 
 source('./code/02-helpers.R', local = knitr::knit_global())
 source('./code/01-preprocessing.R', local = knitr::knit_global())
 source('./code/03-statistics.R', local = knitr::knit_global())
-source('./code/04-descriptives.R', local = knitr::knit_global())
 source('./code/05-figures.R', local = knitr::knit_global())
 ```
+
+```{r child = "code/04-descriptives.Rmd"}
+
+```
+
+# Note
+
+The analyses reported here strictly follow the OSF Preregistration, available at [https://osf.io/cdym2](). Unregistered analyses are labeled as UNREGISTERED in the comments section.
