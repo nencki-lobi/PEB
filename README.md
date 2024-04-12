@@ -12,6 +12,14 @@ Data can be obtained directly from the SQL database by running the following com
 psql -U grieg -d grieg --csv --file code/peb.sql
 ```
 
+## How to run
+
+You can reproduce the analyses described in the manuscript by running the following command in R:
+
+```
+source('PEB-main.R')
+```
+
 ## Requirements
 
-The following R packages are required: `ggplot2`, `lavaan` ,`report`, `tidyverse`.
+The following R packages are required: `car`, `ggplot2`, `gtsummary`, `lavaan`, `psych`, `report`, `Rmisc`, `tidyverse`.
