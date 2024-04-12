@@ -17,13 +17,13 @@ library('gtsummary')
 
 set.seed(2137) # set seed for replicability
 
-source('./code/02-helpers.R', local = knitr::knit_global())
-source('./code/01-preprocessing.R', local = knitr::knit_global())
+source('./code/01-helpers.R', local = knitr::knit_global())
+source('./code/02-preprocessing.R', local = knitr::knit_global())
 source('./code/03-statistics.R', local = knitr::knit_global())
-source('./code/05-figures.R', local = knitr::knit_global())
+source('./code/04-figures.R', local = knitr::knit_global())
 ```
 
-```{r child = "code/04-descriptives.Rmd"}
+```{r child = "code/05-descriptives.Rmd"}
 
 ```
 
