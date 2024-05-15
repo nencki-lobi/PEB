@@ -1,3 +1,12 @@
+library(car)
+library(ggplot2)
+library(gtsummary)
+library(lavaan)
+library(psych)
+library(report)
+library(Rmisc)
+library(tidyverse)
+
 odir = "./output"
 if (!dir.exists(odir)) {dir.create(odir)}
 
@@ -8,5 +17,4 @@ for (i in c("PL", "NO")) {
   
   rmarkdown::render("PEB.Rmd", 
                     params = list(country = i),
-                    output_file=paste0("./output/", i, "/descriptives.html"))
-}
+                    output_file=paste0("./output/", i, "/descriptives.html"))}

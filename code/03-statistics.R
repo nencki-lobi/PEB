@@ -6,6 +6,16 @@ df = clean_dataset
 
 cat("\n \n Descriptives \n \n")
 
+desc_total = df %>%
+  summarise(across(where(is.numeric), list(
+    Mean = mean,
+    Median = median,
+    Sum = sum,
+    SD = sd
+  ), na.rm = TRUE))
+
+print(desc_total)
+
 desc = describeBy(aim + wept + donation + cPEB ~ category, data = df)
 print(desc)
 

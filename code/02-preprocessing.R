@@ -73,8 +73,9 @@ donations_transposed = donations %>%
 pebs = intentions_transposed %>%
   full_join(weptings_transposed, by = c("sid","stid")) %>%
   full_join(donations_transposed, by = c("sid","stid")) %>%
-  mutate(cPEB = case_when(stid == 23 ~ (wept/15 + donation/20) /2,
-                          stid == 26 ~ (wept/15 + donation/200) /2))
+  mutate_at(vars(wept_cor, wept_inc, wept), ~coalesce(., 0)) %>%
+  mutate(cPEB = case_when(stid == 23 ~ (wept/15 + donation/20) / 2,
+                          stid == 26 ~ (wept/15 + donation/200) / 2))
 
 demo_transposed = demo %>%
   pivot_wider(id_cols = c("sid", "stid"),
@@ -104,8 +105,8 @@ dataset = conditions_transposed  %>%
   full_join(ratings_transposed, by = c("sid","stid")) %>%
   full_join(times_transposed, by = c("sid","stid")) %>%
   full_join(pebs, by = c("sid","stid")) %>%
-  full_join(demo_transposed, by = c("sid","stid")) %>% 
-  na.omit()
+  full_join(demo_transposed, by = c("sid","stid"))
+  #na.omit()
 
 ## Select country
 
@@ -217,11 +218,11 @@ plot.check(ptitle, ftitle, selected)
 
 ## To use the whole dataset (as preregistered), use the following:
 
-# selected = subjects # use whole dataset (as preregistered)
+selected = subjects # use whole dataset (as preregistered)
 
 ## To filter data based on selected exclusion criteria, use one of the following:
 
-selected = subset(subjects, soft_check == 1)
+# selected = subset(subjects, soft_check == 1)
 # selected = subset(subjects, hard_check == 1)
 # selected = subset(subjects, soft_check == 1 & time_check == 1)
 # selected = subset(subjects, hard_check == 1 & time_check == 1)
