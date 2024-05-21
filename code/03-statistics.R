@@ -112,43 +112,166 @@ output(chisq.test(observed[,"NEU"], p = baseline)) # Just a sanity check...
 cat("\n \n Hypothesis 4: Regression models \n \n")
 
 # cPEB
-cat("\n \n cPEB model: with interactions \n \n")
-model = lm(cPEB ~ category + category:valence + category:arousal + category:bcc 
-           + category:ccc + category:PCAE + category:PD + category:WTS 
-           + category:sex + category:age + category:res + category:edu 
-           + category:kid + category:ses, data = df) 
-output(summary(model))
 
 cat("\n \n cPEB model: without interactions \n \n")
-model = lm(cPEB ~ valence + arousal + bcc + ccc + PCAE + PD + WTS 
+model1 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
            + sex + age + res + edu + kid + ses, data = df)
-output(summary(model))
+
+cat("\n \n Assumptions tests \n \n")
+
+# Linearity
+plot(model1)
+# Independence
+durbinWatsonTest(model1)
+# Homoscedasticity
+ncvTest(model1) # Non-constant Variance test
+# Normality of Residuals
+shapiro.test(residuals(model1))
+qqnorm(residuals(model1))
+qqline(residuals(model1))
+# Multicollinearity
+vif(model1) # Variance Inflation Factor
+# Influential Outliers
+plot(cooks.distance(model1), type="h")
+
+output(summary(model1))
+
+cat("\n \n cPEB model: with interactions \n \n")
+model2 = lm(cPEB ~ category + category:valence + category:arousal + category:bcc 
+           + category:ccc + category:PCAE + category:PD + category:WTS 
+           + category:sex + category:age + category:res + category:edu 
+           + category:kid + category:ses, data = df) 
+
+cat("\n \n Assumptions tests \n \n")
+
+# Linearity
+plot(model2)
+# Independence
+durbinWatsonTest(model2)
+# Homoscedasticity
+ncvTest(model2) # Non-constant Variance test
+# Normality of Residuals
+shapiro.test(residuals(model2))
+qqnorm(residuals(model2))
+qqline(residuals(model2))
+# Multicollinearity
+vif(model2) # Variance Inflation Factor
+# Influential Outliers
+plot(cooks.distance(model2), type="h")
+
+
+cat("\n \n cPEB models: differences in explained variance\n \n")
+output(summary(model2))
+int_improvement = anova(model1,model2)
+output(int_improvement)
+
 
 # WEPT
-cat("\n \n WEPT model: with interactions \n \n")
-model = lm(wept ~ category + category:valence + category:arousal + category:bcc 
-           + category:ccc + category:PCAE + category:PD + category:WTS 
-           + category:sex + category:age + category:res + category:edu 
-           + category:kid + category:ses, data = df) 
-output(summary(model))
 
 cat("\n \n WEPT model: without interactions \n \n")
-model = lm(wept ~ valence + arousal + bcc + ccc + PCAE + PD + WTS 
+model1 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
            + sex + age + res + edu + kid + ses, data = df)
-output(summary(model))
 
-# donation
-cat("\n \n Donation model: with interactions \n \n")
-model = lm(donation ~ category + category:valence + category:arousal + category:bcc 
+cat("\n \n Assumptions tests \n \n")
+
+# Linearity
+plot(model1)
+# Independence
+durbinWatsonTest(model1)
+# Homoscedasticity
+ncvTest(model1) # Non-constant Variance test
+# Normality of Residuals
+shapiro.test(residuals(model1))
+qqnorm(residuals(model1))
+qqline(residuals(model1))
+# Multicollinearity
+vif(model1) # Variance Inflation Factor
+# Influential Outliers
+plot(cooks.distance(model1), type="h")
+output(summary(model1))
+
+cat("\n \n WEPT model: with interactions \n \n")
+model2 = lm(wept ~ category + category:valence + category:arousal + category:bcc 
            + category:ccc + category:PCAE + category:PD + category:WTS 
            + category:sex + category:age + category:res + category:edu 
            + category:kid + category:ses, data = df) 
-output(summary(model))
+
+cat("\n \n Assumptions tests \n \n")
+
+# Linearity
+plot(model2)
+# Independence
+durbinWatsonTest(model2)
+# Homoscedasticity
+ncvTest(model2) # Non-constant Variance test
+# Normality of Residuals
+shapiro.test(residuals(model2))
+qqnorm(residuals(model2))
+qqline(residuals(model2))
+# Multicollinearity
+vif(model2) # Variance Inflation Factor
+# Influential Outliers
+plot(cooks.distance(model2), type="h")
+
+output(summary(model2))
+
+cat("\n \n WEPT models: differences in explained variance\n \n")
+anova(model1,model2)
+int_improvement = anova(model1,model2)
+output(int_improvement)
+
+# donation
 
 cat("\n \n Donation model: without interactions \n \n")
-model = lm(donation ~ valence + arousal + bcc + ccc + PCAE + PD + WTS 
+model1 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
            + sex + age + res + edu + kid + ses, data = df)
-output(summary(model))
+
+# Linearity
+plot(model1)
+# Independence
+durbinWatsonTest(model1)
+# Homoscedasticity
+ncvTest(model1) # Non-constant Variance test
+# Normality of Residuals
+shapiro.test(residuals(model1))
+qqnorm(residuals(model1))
+qqline(residuals(model1))
+# Multicollinearity
+vif(model1) # Variance Inflation Factor
+# Influential Outliers
+plot(cooks.distance(model1), type="h")
+output(summary(model1))
+
+cat("\n \n Donation model: with interactions \n \n")
+model2 = lm(donation ~ category + category:valence + category:arousal + category:bcc 
+           + category:ccc + category:PCAE + category:PD + category:WTS 
+           + category:sex + category:age + category:res + category:edu 
+           + category:kid + category:ses, data = df) 
+
+cat("\n \n Assumptions tests \n \n")
+
+# Linearity
+plot(model2)
+# Independence
+durbinWatsonTest(model2)
+# Homoscedasticity
+ncvTest(model2) # Non-constant Variance test
+# Normality of Residuals
+shapiro.test(residuals(model2))
+qqnorm(residuals(model2))
+qqline(residuals(model2))
+# Multicollinearity
+vif(model2) # Variance Inflation Factor
+# Influential Outliers
+plot(cooks.distance(model2), type="h")
+
+output(summary(model2))
+
+
+cat("\n \n Donation models: differences in explained variance\n \n")
+anova(model1,model2)
+int_improvement = anova(model1,model2)
+output(int_improvement)
 
 ## Hypothesis 4: UNREGISTERED
 
