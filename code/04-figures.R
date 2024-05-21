@@ -108,3 +108,54 @@ p = ggplot(summary_df, aes(x=category, y=donation)) +
   geom_errorbar(aes(ymin=donation-ci, ymax=donation+ci), width = 0.4) +
   labs(x = "Condition", y = "Donation") + beauty
 ggsave("H2-M-donation.png", p, width = 4, height = 4, path = sdir)
+
+
+# Hypothesis 4 
+
+sdir = sdir.create("Interactions")
+
+model = lm(cPEB ~ category * valence + category * arousal + category * bcc + 
+             category * ccc + category * PCAE + category * PD + 
+             category * WTS + category * sex + category * age + 
+             category * res + category * edu + category * kid + 
+             category * ses, data = df)
+
+predictors = c("valence", "arousal", "bcc", "ccc", "PCAE", "PD", "WTS", 
+               "sex", "age", "res", "edu", "kid", "ses")
+
+#Regression plots, no scatter points
+
+plot_interaction_lines = function(pred, modx, file_name) {
+  p = ggplot(df, aes_string(x = pred, y = "cPEB", color = modx)) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = paste("Interaction between", pred, "and", modx),
+         x = pred, y = "cPEB") +
+    theme_minimal()
+  ggsave(file_name, plot = p, width = 4, height = 4, path = sdir)
+}
+
+
+for (pred in predictors) {
+  file_name = paste0("int_", pred, "_lines.png")
+  plot_interaction_lines(pred, "category", file_name)
+}
+
+#Regression + scatter
+
+
+plot_interaction = function(pred, modx, file_name) {
+  
+  p = ggplot(df, aes_string(x = pred, y = "cPEB", color = modx)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(title = paste("Interaction between", pred, "and", modx),
+         x = pred, y = "cPEB") +
+    theme_minimal()
+  ggsave(file_name, plot = p, width = 4, height = 4, path = sdir)
+}
+
+for (pred in predictors) {
+  file_name = paste0("int_", pred, ".png")
+  plot_interaction(pred, "category", file_name)
+}
+
