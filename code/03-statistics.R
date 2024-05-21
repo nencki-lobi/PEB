@@ -23,6 +23,15 @@ cat("\n \n Correlation between PEB measures (WEPT and donations) \n \n")
 correlation = cor(df$wept, df$donation)
 output(correlation)
 
+cat("\n \n Story length descriptives \n \n")
+desc_stories = stories %>%
+  summarise(across(where(is.numeric), list(
+    Mean = mean,
+    SD = sd
+  ), na.rm = TRUE))
+
+print(desc_stories)
+
 # Hypothesis 1
 
 cat("\n \n Hypothesis 1: t-tests \n \n")

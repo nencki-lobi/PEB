@@ -8,6 +8,8 @@ intentions = read.table("./data/peb-intentions.csv", header = T, sep = ",", enco
 weptings = read.table("./data/peb-weptings.csv", header = T, sep = ",", encoding = "UTF-8")
 donations = read.table("./data/peb-donations.csv", header = T, sep = ",", encoding = "UTF-8")
 demo = read.table("./data/demographic.csv", header = T, sep = ",", encoding = "UTF-8")
+stories = read.table("./data/stories.csv", header = FALSE, sep = ",", quote = "\"", encoding = "UTF-8")
+colnames(stories) = c("PL", "EN", "NO", "code")
 
 # Generate derivatives
 
@@ -96,6 +98,15 @@ demo_transposed = demo %>%
          ), levels = c("Z","Y","X","Boomer","Silent"))) %>%
   mutate(res = ifelse(res == 4, 3, res)) %>% # pooling data due to small number of observations
   select(sid, stid, sex, age, gen, res, edu, kid, ses, bcc, ccc)
+
+stories = stories %>%
+  mutate(len_PL = nchar(PL),
+         len_EN = nchar(EN),
+         len_NO = nchar(NO)) %>%
+  filter(code %in% c("ANG8", "ANG20", "ANG30", "ANG25", "ANG6", "ANG9", "ANG1", "ANG12", "ANG3",
+                     "COM27", "COM18", "COM9", "COM20", "COM11", "COM8", "COM29", "COM23", "COM28",
+                     "HOP23", "HOP15", "HOP27", "HOP13", "HOP17", "HOP26", "HOP5", "HOP11", "HOP22",
+                     "NEU26", "NEU3", "NEU18", "NEU22", "NEU17", "NEU14", "NEU12", "NEU8", "NEU19"))
 
 
 # Joined dataset
