@@ -6,15 +6,6 @@ params:
 ---
 
 ```{r include=FALSE, echo=FALSE}
-library('Rmisc')
-library('tidyverse')
-library('psych')
-library('ggplot2')
-library('report')
-library('lavaan')
-library('car')
-library('gtsummary')
-
 set.seed(2137) # set seed for replicability
 
 source('./code/01-helpers.R', local = knitr::knit_global())
