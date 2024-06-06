@@ -2,14 +2,14 @@
 
 conditions = read.table("./data/conditions.csv", header = T, sep = ",", encoding = "UTF-8")
 questionnaires = read.table("./data/questionnaires.csv", header = T, sep = ",", encoding = "UTF-8")
+stories = read.table("./data/stories.tsv", header = F, sep = "\t", quote = "", encoding = "UTF-8",
+                     col.names = c("PL", "EN", "NO", "code"))
 ratings = read.table("./data/story-ratings.csv", header = T, sep = ",", encoding = "UTF-8")
 times = read.table("./data/story-times.csv", header = T, sep = ",", encoding = "UTF-8")
 intentions = read.table("./data/peb-intentions.csv", header = T, sep = ",", encoding = "UTF-8")
 weptings = read.table("./data/peb-weptings.csv", header = T, sep = ",", encoding = "UTF-8")
 donations = read.table("./data/peb-donations.csv", header = T, sep = ",", encoding = "UTF-8")
 demo = read.table("./data/demographic.csv", header = T, sep = ",", encoding = "UTF-8")
-stories = read.table("./data/stories.csv", header = FALSE, sep = ",", quote = "\"", encoding = "UTF-8")
-colnames(stories) = c("PL", "EN", "NO", "code")
 
 # Generate derivatives
 
