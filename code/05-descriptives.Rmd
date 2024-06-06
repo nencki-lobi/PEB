@@ -5,30 +5,61 @@ df = clean_dataset
 ```
 
 ```{r}
-df %>%
-  select(category, bcc, ccc, valence, arousal, anger, compassion, hope) %>%
-  tbl_summary(
+subdf = df %>%
+  select(category, valence, arousal, anger, compassion, hope)
+
+tbl = tbl_summary(subdf,
     by = category,
     statistic = list(
       all_continuous() ~ "{mean} ({sd})",
       all_categorical() ~ "{n} ({p}%)"
     ),
     digits = all_continuous() ~ 2,
-    missing_text = "(Missing)"
+    missing_text = "(Missing)",
+    label = list(valence ~ "Valence",
+                 arousal ~ "Arousal",
+                 anger ~ "Anger",
+                 compassion ~ "Compassion",
+                 hope ~ "Hope")
   )
+
+tbl
 ```
 
 ```{r}
-df %>%
+subdf = df %>%
   select(category, sex, gen, res, edu, kid, ses, bcc, ccc, 
-         PCAE_i, PCAE_c, PCAE, PD, WTS) %>%
-  tbl_summary(
+         PCAE, PCAE_i, PCAE_c, PD, WTS)
+
+tbl = tbl_summary(subdf,
     by = category,
+    type = list(kid ~ "categorical",
+                PCAE ~ "continuous",
+                PCAE_i ~ "continuous", 
+                PCAE_c ~ "continuous",
+                PD ~ "continuous", 
+                WTS ~ "continuous"),
     statistic = list(
       all_continuous() ~ "{mean} ({sd})",
       all_categorical() ~ "{n} ({p}%)"
     ),
     digits = all_continuous() ~ 2,
-    missing_text = "(Missing)"
+    missing_text = "(Missing)",
+    label = list(sex ~ "Gender",
+                 gen ~ "Generation",
+                 res ~ "Place of residence",
+                 edu ~ "Education",
+                 kid ~ "Parenthood",
+                 ses ~ "SES",
+                 bcc ~ "CC belief",
+                 ccc ~ "CC concern",
+                 PCAE_i ~ "PCAE - individual",
+                 PCAE_c ~ "PCAE - collective")
   )
+
+tbl
+
+tbl %>%
+  as_gt() %>%
+  gt::gtsave(filename = "descriptives.docx", path = file.path(paste0(".",odir), country))
 ```

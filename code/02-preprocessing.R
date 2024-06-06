@@ -86,7 +86,8 @@ demo_transposed = demo %>%
   rename(sex = "0", sexother = "1", birth = "2", res = "3", edu = "4", kid = "6", ses = "7", bcc = "8", ccc = "9") %>%
   select(-c(sexother)) %>% # removing non-numeric column of no interest for convenience
   mutate(across(where(is.character), as.numeric)) %>%
-  mutate(age = case_when(stid == 23 ~ 2023 - birth,
+  mutate(sex = factor(sex, labels = c("Female", "Male", "Other")),
+         age = case_when(stid == 23 ~ 2023 - birth,
                          stid == 26 ~ 2024 - birth),
          gen = factor(case_when(
            between(birth, 1997, 2012) ~ "Z",
@@ -95,8 +96,30 @@ demo_transposed = demo %>%
            between(birth, 1946, 1964) ~ "Boomer",
            between(birth, 1928, 1945) ~ "Silent",
            TRUE ~ NA_character_
-         ), levels = c("Z","Y","X","Boomer","Silent"))) %>%
-  mutate(res = ifelse(res == 4, 3, res)) %>% # pooling data due to small number of observations
+         ), levels = c("Z","Y","X","Boomer","Silent")),
+         res = ifelse(res == 4, 3, res), # pooling data due to small number of observations
+         res = factor(res, labels = c("Big city", "Suburbs of a big city", "Small city", "Country village")),
+         edu = case_when(stid == 23 ~ recode(edu, `0`=0, `1`=0, `2`=1, `4`=1, `3`=2, `5`=3, `6`=3, `7`=3, `8`=4),
+                         stid == 26 ~ edu),
+         edu = factor(edu, labels = c("Primary",
+                                      "Secondary", 
+                                      "Vocational", 
+                                      "University/College", 
+                                      "Other")),
+         kid = factor(kid, labels = c("Yes", "No")),
+         ses = factor(ses, labels = c("Living comfortably on present income",
+                                      "Coping on present income",
+                                      "Finding it difficult on present income",
+                                      "Finding it very difficult on present income")),
+         bcc = factor(bcc, labels = c("Definitely happening", 
+                                      "Rather happening", 
+                                      "Rather not happening", 
+                                      "Definitely not happening")),
+         ccc = factor(ccc, labels = c("Not at all concerned",
+                                      "Not very concerned",
+                                      "Somewhat concerned",
+                                      "Very concerned",
+                                      "Extremely concerned"))) %>%
   select(sid, stid, sex, age, gen, res, edu, kid, ses, bcc, ccc)
 
 stories = stories %>%
