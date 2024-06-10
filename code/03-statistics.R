@@ -164,7 +164,7 @@ shapiro.test(residuals(model2))
 qqnorm(residuals(model2))
 qqline(residuals(model2))
 # Multicollinearity
-vif(model2) # Variance Inflation Factor
+vif(model2, type = 'predictor') # Variance Inflation Factor
 # Influential Outliers
 plot(cooks.distance(model2), type="h")
 
@@ -218,7 +218,7 @@ shapiro.test(residuals(model2))
 qqnorm(residuals(model2))
 qqline(residuals(model2))
 # Multicollinearity
-vif(model2) # Variance Inflation Factor
+vif(model2, type = 'predictor') # Variance Inflation Factor
 # Influential Outliers
 plot(cooks.distance(model2), type="h")
 
@@ -270,7 +270,7 @@ shapiro.test(residuals(model2))
 qqnorm(residuals(model2))
 qqline(residuals(model2))
 # Multicollinearity
-vif(model2) # Variance Inflation Factor
+vif(model2, type = 'predictor') # Variance Inflation Factor
 # Influential Outliers
 plot(cooks.distance(model2), type="h")
 
@@ -281,45 +281,5 @@ cat("\n \n Donation models: differences in explained variance\n \n")
 anova(model1,model2)
 int_improvement = anova(model1,model2)
 output(int_improvement)
-
-## Hypothesis 4: UNREGISTERED
-
-cat("\n \n Hypothesis 4: SEM models (UNREGISTERED) \n \n")
-
-df2 = clean_dataset # use a fresh dataframe, as `lavaan` requires some of the vars changed
-
-cat("\n \n SEM model: with interactions \n \n")
-
-#' This model includes interaction terms in the equations for both dependent 
-#' variables (donation and WEPT). Thus, it investigates moderators between PEBs 
-#' and category.
-
-model = '
-donation ~ category*valence + category*arousal + category*bcc + category*ccc + category*PCAE + category*PD + category*WTS + category*sex + category*age + category*res + category*edu + category*kid + category*ses
-wept ~ category*valence + category*arousal + category*bcc + category*ccc + category*PCAE + category*PD + category*WTS + category*sex + category*age + category*res + category*edu + category*kid + category*ses
-donation ~~ wept
-#category ~ valence + arousal + bcc + ccc + PCAE + PD + WTS + sex + age + res + edu + kid + ses
-'
-
-fit = sem(model, data = df2)
-output(summary(fit, standardized = TRUE))
-
-cat("\n \n SEM model: without interactions \n \n")
-
-#' This model assumes a linear relationship between the dependent variables 
-#' (donation and WEPT) and the independent variables, without considering any 
-#' interaction effects.
-
-model = '
-donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS + sex + age + res + edu + kid + ses
-wept  ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS + sex + age + res + edu + kid + ses
-donation ~~ wept
-category ~ valence + arousal + bcc + ccc + PCAE + PD + WTS + sex + age + res + edu + kid + ses
-'
-
-df2$category = ordered(df2$category) # `lavaan` requires `category` to be either numeric or ordered
-
-fit = sem(model, data = df2)
-output(summary(fit, standardized = TRUE))
 
 sink()

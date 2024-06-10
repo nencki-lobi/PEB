@@ -5,18 +5,20 @@ df = clean_dataset
 # Descriptives
 
 p = ggplot(data = df, aes(x = bcc)) +
-  geom_histogram(binwidth = 1, color="black", fill = "gray", color = "white") +
+  geom_bar(color="black", fill = "gray") +
   facet_wrap(~category, ncol = 2) +
-  labs(x = "Climate change belief", y = "Frequency") + 
-  beauty
-ggsave("D1-belief.png", p, width = 4, height = 4, path = sdir)
+  labs(x = "Climate change belief", y = "Frequency") +
+  scale_x_discrete(labels = str_wrap(levels(df$bcc), width = 10)) +
+  beauty + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("D1-belief.png", p, width = 8, height = 8, path = sdir)
 
 p = ggplot(data = df, aes(x = ccc)) +
-  geom_histogram(binwidth = 1, color="black", fill = "gray", color = "white") +
+  geom_bar(color="black", fill = "gray") +
   facet_wrap(~category, ncol = 2) +
   labs(x = "Climate change concern", y = "Frequency") + 
-  beauty
-ggsave("D2-concern.png", p, width = 4, height = 4, path = sdir)
+  scale_x_discrete(labels = str_wrap(levels(df$ccc), width = 10)) +
+  beauty + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave("D2-concern.png", p, width = 8, height = 8, path = sdir)
 
 # Hypothesis 1
 
