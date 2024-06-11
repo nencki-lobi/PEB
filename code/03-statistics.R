@@ -6,29 +6,34 @@ df = clean_dataset
 
 cat("\n \n Descriptives \n \n")
 
-desc_total = df %>%
-  summarise(across(where(is.numeric), list(
-    Mean = mean,
-    Median = median,
-    Sum = sum,
-    SD = sd
-  ), na.rm = TRUE))
+desc = df %>% 
+  select(reading_time, evaluation_time, aim, wept, wept_cor, wept_inc, donation, cPEB) %>%
+  describe()
+
+desc_sum = df %>% 
+  select(wept, wept_cor, wept_inc, donation) %>% 
+  colSums() %>% 
+  as.data.frame() %>% 
+  rename(sum = ".")
+
+desc_total = merge(desc, desc_sum, by="row.names", all.x = T) %>% arrange(vars)
 
 print(desc_total)
 
-desc = describeBy(aim + wept + donation + cPEB ~ category, data = df)
-print(desc)
+desc_by_group = describeBy(reading_time + evaluation_time + aim + wept + wept_cor 
+                           + wept_inc + donation + cPEB ~ category, data = df)
+
+print(desc_by_group)
 
 cat("\n \n Correlation between PEB measures (WEPT and donations) \n \n")
 correlation = cor(df$wept, df$donation)
 output(correlation)
 
 cat("\n \n Story length descriptives \n \n")
-desc_stories = stories %>%
-  summarise(across(where(is.numeric), list(
-    Mean = mean,
-    SD = sd
-  ), na.rm = TRUE))
+
+desc_stories = stories %>% 
+  select(len_PL, len_NO) %>% 
+  describe()
 
 print(desc_stories)
 
