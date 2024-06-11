@@ -118,6 +118,21 @@ output(chisq.test(observed[,"NEU"], p = baseline)) # Just a sanity check...
 
 # Hypothesis 4
 
+check_assumptions = function(model) {
+  dw_test = durbinWatsonTest(model)
+  cat("Durbin-Watson Test for Independence:\n")
+  print(dw_test)
+  cat("\n")
+  ncv_test = ncvTest(model)
+  cat("Non-constant Variance Test for Homoscedasticity:\n")
+  print(ncv_test)
+  cat("\n")
+  shapiro_test = shapiro.test(residuals(model))
+  cat("Shapiro-Wilk Test for Normality of Residuals:\n")
+  print(shapiro_test)
+  cat("\n")
+}
+
 cat("\n \n Hypothesis 4: Regression models \n \n")
 
 # cPEB
@@ -126,51 +141,42 @@ cat("\n \n cPEB model: without interactions \n \n")
 model1 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
            + sex + age + res + edu + kid + ses, data = df)
 
+output(summary(model1))
+tidy_model = tidy(model1)
+tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
+tidy_model$estimate <- round(tidy_model$estimate, 3)
+tidy_model = tidy_model[, c("term", "estimate", "stats")]
+output_file = file.path(cdir, "model_summary_cPEB.csv")
+write.csv(tidy_model, output_file, row.names = FALSE)
+
 cat("\n \n Assumptions tests \n \n")
 
-# Linearity
-plot(model1)
-# Independence
-durbinWatsonTest(model1)
-# Homoscedasticity
-ncvTest(model1) # Non-constant Variance test
-# Normality of Residuals
-shapiro.test(residuals(model1))
-qqnorm(residuals(model1))
-qqline(residuals(model1))
-# Multicollinearity
-vif(model1) # Variance Inflation Factor
-# Influential Outliers
-plot(cooks.distance(model1), type="h")
-
-output(summary(model1))
+check_assumptions(model1)
 
 cat("\n \n cPEB model: with interactions \n \n")
-model2 = lm(cPEB ~ category + category:valence + category:arousal + category:bcc 
+model2 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
+            + sex + age + res + edu + kid + ses+ category:valence + category:arousal + category:bcc 
            + category:ccc + category:PCAE + category:PD + category:WTS 
            + category:sex + category:age + category:res + category:edu 
            + category:kid + category:ses, data = df) 
 
+output(summary(model2))
+tidy_model = tidy(model2)
+tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
+tidy_model$estimate <- round(tidy_model$estimate, 3)
+tidy_model = tidy_model[, c("term", "estimate", "stats")]
+output_file = file.path(cdir, "model_summary_cPEB_int.csv")
+write.csv(tidy_model, output_file, row.names = FALSE)
+
 cat("\n \n Assumptions tests \n \n")
 
-# Linearity
-plot(model2)
-# Independence
-durbinWatsonTest(model2)
-# Homoscedasticity
-ncvTest(model2) # Non-constant Variance test
-# Normality of Residuals
-shapiro.test(residuals(model2))
-qqnorm(residuals(model2))
-qqline(residuals(model2))
-# Multicollinearity
-vif(model2, type = 'predictor') # Variance Inflation Factor
-# Influential Outliers
-plot(cooks.distance(model2), type="h")
-
+check_assumptions(model2)
 
 cat("\n \n cPEB models: differences in explained variance\n \n")
-output(summary(model2))
 int_improvement = anova(model1,model2)
 output(int_improvement)
 
@@ -181,51 +187,42 @@ cat("\n \n WEPT model: without interactions \n \n")
 model1 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
            + sex + age + res + edu + kid + ses, data = df)
 
+output(summary(model1))
+tidy_model = tidy(model1)
+tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
+tidy_model$estimate <- round(tidy_model$estimate, 3)
+tidy_model = tidy_model[, c("term", "estimate", "stats")]
+output_file = file.path(cdir, "model_summary_WEPT.csv")
+write.csv(tidy_model, output_file, row.names = FALSE)
+
 cat("\n \n Assumptions tests \n \n")
 
-# Linearity
-plot(model1)
-# Independence
-durbinWatsonTest(model1)
-# Homoscedasticity
-ncvTest(model1) # Non-constant Variance test
-# Normality of Residuals
-shapiro.test(residuals(model1))
-qqnorm(residuals(model1))
-qqline(residuals(model1))
-# Multicollinearity
-vif(model1) # Variance Inflation Factor
-# Influential Outliers
-plot(cooks.distance(model1), type="h")
-output(summary(model1))
+check_assumptions(model1)
 
 cat("\n \n WEPT model: with interactions \n \n")
-model2 = lm(wept ~ category + category:valence + category:arousal + category:bcc 
+model2 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
+            + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
            + category:ccc + category:PCAE + category:PD + category:WTS 
            + category:sex + category:age + category:res + category:edu 
            + category:kid + category:ses, data = df) 
 
+output(summary(model2))
+tidy_model = tidy(model2)
+tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
+tidy_model$estimate <- round(tidy_model$estimate, 3)
+tidy_model = tidy_model[, c("term", "estimate", "stats")]
+output_file = file.path(cdir, "model_summary_WEPT_int.csv")
+write.csv(tidy_model, output_file, row.names = FALSE)
+
 cat("\n \n Assumptions tests \n \n")
 
-# Linearity
-plot(model2)
-# Independence
-durbinWatsonTest(model2)
-# Homoscedasticity
-ncvTest(model2) # Non-constant Variance test
-# Normality of Residuals
-shapiro.test(residuals(model2))
-qqnorm(residuals(model2))
-qqline(residuals(model2))
-# Multicollinearity
-vif(model2, type = 'predictor') # Variance Inflation Factor
-# Influential Outliers
-plot(cooks.distance(model2), type="h")
-
-output(summary(model2))
+check_assumptions(model2)
 
 cat("\n \n WEPT models: differences in explained variance\n \n")
-anova(model1,model2)
 int_improvement = anova(model1,model2)
 output(int_improvement)
 
@@ -235,50 +232,40 @@ cat("\n \n Donation model: without interactions \n \n")
 model1 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
            + sex + age + res + edu + kid + ses, data = df)
 
-# Linearity
-plot(model1)
-# Independence
-durbinWatsonTest(model1)
-# Homoscedasticity
-ncvTest(model1) # Non-constant Variance test
-# Normality of Residuals
-shapiro.test(residuals(model1))
-qqnorm(residuals(model1))
-qqline(residuals(model1))
-# Multicollinearity
-vif(model1) # Variance Inflation Factor
-# Influential Outliers
-plot(cooks.distance(model1), type="h")
 output(summary(model1))
+tidy_model = tidy(model1)
+tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
+tidy_model$estimate <- round(tidy_model$estimate, 3)
+tidy_model = tidy_model[, c("term", "estimate", "stats")]
+output_file = file.path(cdir, "model_summary_donation.csv")
+write.csv(tidy_model, output_file, row.names = FALSE)
+
+cat("\n \n Assumptions tests \n \n")
+check_assumptions(model1)
 
 cat("\n \n Donation model: with interactions \n \n")
-model2 = lm(donation ~ category + category:valence + category:arousal + category:bcc 
+model2 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
+            + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
            + category:ccc + category:PCAE + category:PD + category:WTS 
            + category:sex + category:age + category:res + category:edu 
            + category:kid + category:ses, data = df) 
 
-cat("\n \n Assumptions tests \n \n")
-
-# Linearity
-plot(model2)
-# Independence
-durbinWatsonTest(model2)
-# Homoscedasticity
-ncvTest(model2) # Non-constant Variance test
-# Normality of Residuals
-shapiro.test(residuals(model2))
-qqnorm(residuals(model2))
-qqline(residuals(model2))
-# Multicollinearity
-vif(model2, type = 'predictor') # Variance Inflation Factor
-# Influential Outliers
-plot(cooks.distance(model2), type="h")
-
 output(summary(model2))
+tidy_model = tidy(model2)
+tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                           ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                  formatC(tidy_model$p.value, format = "f", digits = 2)))
+tidy_model$estimate <- round(tidy_model$estimate, 3)
+tidy_model = tidy_model[, c("term", "estimate", "stats")]
+output_file = file.path(cdir, "model_summary_donation_int.csv")
+write.csv(tidy_model, output_file, row.names = FALSE)
 
+cat("\n \n Assumptions tests \n \n")
+check_assumptions(model2)
 
 cat("\n \n Donation models: differences in explained variance\n \n")
-anova(model1,model2)
 int_improvement = anova(model1,model2)
 output(int_improvement)
 
