@@ -138,6 +138,16 @@ check_assumptions = function(model) {
   cat("\n")
 }
 
+tidy.up = function(model) {
+  tidy_model = tidy(model)
+  tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
+                            ifelse(tidy_model$p.value < 0.001, "p<0.001", 
+                                   formatC(tidy_model$p.value, format = "f", digits = 2)))
+  tidy_model$estimate = round(tidy_model$estimate, 3)
+  tidy_model = tidy_model[, c("term", "estimate", "stats")]
+  return(tidy_model)
+}
+
 cat("\n \n Hypothesis 4: Regression models \n \n")
 
 # cPEB
@@ -147,12 +157,7 @@ model1 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS
            + sex + age + res + edu + kid + ses, data = df)
 
 output(summary(model1))
-tidy_model = tidy(model1)
-tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
-tidy_model$estimate <- round(tidy_model$estimate, 3)
-tidy_model = tidy_model[, c("term", "estimate", "stats")]
+tidy_model = tidy.up(model1)
 output_file = file.path(cdir, "model_summary_cPEB.csv")
 write.csv(tidy_model, output_file, row.names = FALSE)
 
@@ -162,18 +167,13 @@ check_assumptions(model1)
 
 cat("\n \n cPEB model: with interactions \n \n")
 model2 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses+ category:valence + category:arousal + category:bcc 
+            + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
            + category:ccc + category:PCAE + category:PD + category:WTS 
            + category:sex + category:age + category:res + category:edu 
            + category:kid + category:ses, data = df) 
 
 output(summary(model2))
-tidy_model = tidy(model2)
-tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
-tidy_model$estimate <- round(tidy_model$estimate, 3)
-tidy_model = tidy_model[, c("term", "estimate", "stats")]
+tidy_model = tidy.up(model2)
 output_file = file.path(cdir, "model_summary_cPEB_int.csv")
 write.csv(tidy_model, output_file, row.names = FALSE)
 
@@ -193,12 +193,7 @@ model1 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS
            + sex + age + res + edu + kid + ses, data = df)
 
 output(summary(model1))
-tidy_model = tidy(model1)
-tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
-tidy_model$estimate <- round(tidy_model$estimate, 3)
-tidy_model = tidy_model[, c("term", "estimate", "stats")]
+tidy_model = tidy.up(model1)
 output_file = file.path(cdir, "model_summary_WEPT.csv")
 write.csv(tidy_model, output_file, row.names = FALSE)
 
@@ -214,12 +209,7 @@ model2 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS
            + category:kid + category:ses, data = df) 
 
 output(summary(model2))
-tidy_model = tidy(model2)
-tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
-tidy_model$estimate <- round(tidy_model$estimate, 3)
-tidy_model = tidy_model[, c("term", "estimate", "stats")]
+tidy_model = tidy.up(model2)
 output_file = file.path(cdir, "model_summary_WEPT_int.csv")
 write.csv(tidy_model, output_file, row.names = FALSE)
 
@@ -238,12 +228,7 @@ model1 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WT
            + sex + age + res + edu + kid + ses, data = df)
 
 output(summary(model1))
-tidy_model = tidy(model1)
-tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                          ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                 formatC(tidy_model$p.value, format = "f", digits = 2)))
-tidy_model$estimate <- round(tidy_model$estimate, 3)
-tidy_model = tidy_model[, c("term", "estimate", "stats")]
+tidy_model = tidy.up(model1)
 output_file = file.path(cdir, "model_summary_donation.csv")
 write.csv(tidy_model, output_file, row.names = FALSE)
 
@@ -258,12 +243,7 @@ model2 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WT
            + category:kid + category:ses, data = df) 
 
 output(summary(model2))
-tidy_model = tidy(model2)
-tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                           ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                  formatC(tidy_model$p.value, format = "f", digits = 2)))
-tidy_model$estimate <- round(tidy_model$estimate, 3)
-tidy_model = tidy_model[, c("term", "estimate", "stats")]
+tidy_model = tidy.up(model2)
 output_file = file.path(cdir, "model_summary_donation_int.csv")
 write.csv(tidy_model, output_file, row.names = FALSE)
 
