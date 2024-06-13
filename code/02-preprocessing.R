@@ -115,11 +115,11 @@ demo_transposed = demo %>%
                                       "Rather happening", 
                                       "Rather not happening", 
                                       "Definitely not happening")),
-         ccc = factor(ccc, labels = c("Not at all concerned",
-                                      "Not very concerned",
-                                      "Somewhat concerned",
-                                      "Very concerned",
-                                      "Extremely concerned"))) %>%
+         ccc = factor(ccc, labels = c("1 (Not at all concerned)",
+                                      "2",
+                                      "3",
+                                      "4",
+                                      "5 (Extremely concerned)"))) %>%
   select(sid, stid, sex, age, gen, res, edu, kid, ses, bcc, ccc)
 
 stories = stories %>%
