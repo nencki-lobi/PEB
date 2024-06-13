@@ -9,7 +9,7 @@ p = ggplot(data = df, aes(x = bcc)) +
   facet_wrap(~category, ncol = 2) +
   labs(x = "Climate change belief", y = "Frequency") +
   scale_x_discrete(labels = str_wrap(levels(df$bcc), width = 10)) +
-  beauty + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  beauty + theme(axis.text.x = element_text(angle = 30, hjust = 0.5, vjust = 0.5))
 ggsave("D1-belief.png", p, width = 8, height = 8, path = sdir)
 
 p = ggplot(data = df, aes(x = ccc)) +
@@ -17,7 +17,7 @@ p = ggplot(data = df, aes(x = ccc)) +
   facet_wrap(~category, ncol = 2) +
   labs(x = "Climate change concern", y = "Frequency") + 
   scale_x_discrete(labels = str_wrap(levels(df$ccc), width = 10)) +
-  beauty + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  beauty + theme(axis.text.x = element_text(angle = 30, hjust = 0.5, vjust = 0.5))
 ggsave("D2-concern.png", p, width = 8, height = 8, path = sdir)
 
 # Hypothesis 1
@@ -114,50 +114,87 @@ ggsave("H2-M-donation.png", p, width = 4, height = 4, path = sdir)
 
 # Hypothesis 4 
 
-sdir = sdir.create("Interactions")
-
-model = lm(cPEB ~ category * valence + category * arousal + category * bcc + 
-             category * ccc + category * PCAE + category * PD + 
-             category * WTS + category * sex + category * age + 
-             category * res + category * edu + category * kid + 
-             category * ses, data = df)
-
-predictors = c("valence", "arousal", "bcc", "ccc", "PCAE", "PD", "WTS", 
-               "sex", "age", "res", "edu", "kid", "ses")
-
-#Regression plots, no scatter points
-
-plot_interaction_lines = function(pred, modx, file_name) {
-  p = ggplot(df, aes_string(x = pred, y = "cPEB", color = modx)) +
-    geom_smooth(method = "lm", se = FALSE) +
-    labs(title = paste("Interaction between", pred, "and", modx),
-         x = pred, y = "cPEB") +
-    theme_minimal()
-  ggsave(file_name, plot = p, width = 4, height = 4, path = sdir)
-}
-
-
-for (pred in predictors) {
-  file_name = paste0("int_", pred, "_lines.png")
-  plot_interaction_lines(pred, "category", file_name)
-}
-
-#Regression + scatter
-
-
-plot_interaction = function(pred, modx, file_name) {
+plot.interactions.categorical = function(df, measure, predictor) {
   
-  p = ggplot(df, aes_string(x = pred, y = "cPEB", color = modx)) +
-    geom_point(alpha = 0.5) +
-    geom_smooth(method = "lm", se = FALSE) +
-    labs(title = paste("Interaction between", pred, "and", modx),
-         x = pred, y = "cPEB") +
-    theme_minimal()
-  ggsave(file_name, plot = p, width = 4, height = 4, path = sdir)
+  # NOTE: This function uses tidy evaluation pronoun .data
+  
+  thumb = 5 # rule of thumb to discard predictor levels with too little observations
+  
+  summary_df = summarySE(df, measurevar = measure, groupvars = c(predictor, "category"), .drop = F) %>%
+    group_by(.data[[predictor]]) %>%
+    filter(!any(N < thumb)) %>%
+    ungroup()
+  
+  print(summary_df)
+  
+  pd = position_dodge(0.1) # move data points .05 to the left and right
+  lab = levels(df[[predictor]])
+  
+  ggplot(summary_df, aes(x = .data[[predictor]], 
+                         y = .data[[measure]], 
+                         colour = .data[["category"]], 
+                         group = .data[["category"]])) + 
+    # geom_errorbar(aes(ymin = .data[[measure]] - ci, ymax = .data[[measure]] + ci), width =.1, position = pd) +
+    geom_line(position = pd, linewidth = 0.7) +
+    geom_point(position = pd) +
+    scale_color_manual(guide = guide_legend(title = "Category"), values = colors) +
+    scale_x_discrete(labels = str_wrap(lab, width = 10)) +
+    beauty + theme(axis.title.x = element_blank(), 
+                   axis.text.x = element_text(angle = 30, hjust = 0.5, vjust = 0.5))
+}  
+
+plot.interactions.continuous = function(df, measure, predictor) {
+  
+  # NOTE: This function uses tidy evaluation pronoun .data
+  
+  ggplot(df, aes(x = .data[[predictor]], 
+                 y = .data[[measure]], 
+                 colour = .data[["category"]], 
+                 group = .data[["category"]])) +
+    # geom_point(alpha = 0.2) +
+    geom_smooth(method = "lm", se = FALSE, linewidth = 0.7) +
+    scale_color_manual(guide = guide_legend(title = "Category"), values = colors) +
+    beauty + theme(axis.title.x = element_blank())
 }
 
-for (pred in predictors) {
-  file_name = paste0("int_", pred, ".png")
-  plot_interaction(pred, "category", file_name)
+predictors_categorical = c("bcc", "ccc", "sex", "res", "edu", "kid", "ses")
+predictors_continuous = c("valence", "arousal", "PCAE", "PD", "WTS", "age")
+
+titles_categorical = c("CC belief", "CC concern", "Gender", "Place of residence", "Education", "Parenthood", "SES")
+titles_continuous = c("Valence", "Arousal", "PCAE", "PD", "WTS", "Age")
+
+npred = length(predictors_categorical)
+for (pred in 1:npred) {
+  
+  predictor = predictors_categorical[pred]
+  title = titles_categorical[pred]
+  
+  p1 = plot.interactions.categorical(df, "cPEB", predictor)
+  p2 = plot.interactions.categorical(df, "wept", predictor)
+  p3 = plot.interactions.categorical(df, "donation", predictor)
+  
+  p = p1 + p2 + p3 + 
+    plot_layout(ncol = 3, guides = "collect") +
+    plot_annotation(title = paste(title, "-", country_full))
+  
+  file_name = paste0("H4-int-", predictor, ".png")
+  ggsave(file_name, plot = p, width = 10, height = 4, path = sdir)
 }
 
+npred = length(predictors_continuous)
+for (pred in 1:npred) {
+  
+  predictor = predictors_continuous[pred]
+  title = titles_continuous[pred]
+  
+  p1 = plot.interactions.continuous(df, "cPEB", predictor)
+  p2 = plot.interactions.continuous(df, "wept", predictor)
+  p3 = plot.interactions.continuous(df, "donation", predictor)
+  
+  p = p1 + p2 + p3 + 
+    plot_layout(ncol = 3, guides = "collect") +
+    plot_annotation(title = paste(title, "-", country_full))
+  
+  file_name = paste0("H4-int-", predictor, ".png")
+  ggsave(file_name, plot = p, width = 10, height = 4, path = sdir)
+}

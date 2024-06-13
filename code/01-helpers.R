@@ -15,6 +15,7 @@ output = function(content) {
 } 
 
 country = params$country
+country_full = if_else(country == "PL", "Poland", "Norway")
 
 parts = 0:4
 

@@ -22,4 +22,4 @@ source('PEB-main.R')
 
 ## Requirements
 
-The following R packages are required: `broom`, `car`, `ggplot2`, `gtsummary`, `lavaan`, `psych`, `report`, `Rmisc`, `tidyverse`.
+The following R packages are required: `broom`, `car`, `ggplot2`, `gtsummary`, `lavaan`, `patchwork`, `psych`, `report`, `Rmisc`, `tidyverse`.

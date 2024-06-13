@@ -104,7 +104,7 @@ demo_transposed = demo %>%
          edu = factor(edu, labels = c("Primary",
                                       "Secondary", 
                                       "Vocational", 
-                                      "University/College", 
+                                      "University/ College", 
                                       "Other")),
          kid = factor(kid, labels = c("Yes", "No")),
          ses = factor(ses, labels = c("Living comfortably on present income",

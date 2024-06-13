@@ -7,6 +7,7 @@ library(report)
 library(Rmisc)
 library(tidyverse)
 library(broom)
+library(patchwork)
 
 odir = "./output"
 if (!dir.exists(odir)) {dir.create(odir)}
