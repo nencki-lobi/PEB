@@ -2,7 +2,7 @@ sink(file.path(cdir, "statistics.txt"))
 
 df = clean_dataset
 
-# Descriptives
+# Descriptives total
 
 cat("\n \n Descriptives \n \n")
 
@@ -37,27 +37,184 @@ desc_stories = stories %>%
 
 print(desc_stories)
 
-# Hypothesis 1
+# Descriptives for the exploratory analyses
+cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive to manipulation (included) and not sensitive (excluded)\n\n")
 
-cat("\n \n Hypothesis 1: t-tests \n \n")
+# attach participant-level soft_check group to your analysis dataset
+soft_group = subjects %>%
+  distinct(sid, soft_check) %>%
+  mutate(soft_group = ifelse(soft_check == 1, "included", "excluded")) %>%
+  select(sid, soft_group)
 
-cat("\n \n T-test cPEB \n \n")
-var_test_result = var.test(cPEB ~ emo, data = df)
-t_test_result = t.test(cPEB ~ emo, data = df)
-output(t_test_result)
-output(report(t_test_result))
+df_soft = df %>% left_join(soft_group, by = "sid")
 
-cat("\n \n T-test WEPT \n \n")
-var_test_result = var.test(wept ~ emo, data = df)
-t_test_result = t.test(wept ~ emo, data = df)
-output(t_test_result)
-output(report(t_test_result))
+make_desc_tables_by_category = function(dat, label, cdir) {
+  
+  # Continuous variables
+  cont_vars = c(
+    "reading_time", "evaluation_time",
+    "valence", "arousal", "anger", "compassion", "hope",
+    "aim", "wept", "wept_cor", "wept_inc", "donation", "cPEB",
+    "PCAE", "PD", "WTS", "age"
+  )
+  cont_vars = cont_vars[cont_vars %in% names(dat)]
+  
+  desc_cont_by_category = dat %>%
+    select(category, any_of(cont_vars)) %>%
+    pivot_longer(cols = -category, names_to = "variable", values_to = "value") %>%
+    summarise(
+      n = sum(!is.na(value)),
+      mean = mean(value, na.rm = TRUE),
+      sd = sd(value, na.rm = TRUE),
+      median = median(value, na.rm = TRUE),
+      iqr = IQR(value, na.rm = TRUE),
+      .by = c(category, variable)
+    ) %>%
+    arrange(variable, category)
+  
+  cat("\n\nDescriptives (continuous) by category — ", label, ":\n", sep = "")
+  print(desc_cont_by_category)
+  
+  write.csv(
+    desc_cont_by_category,
+    file.path(cdir, paste0("reviewer_", label, "_descriptives_continuous_by_category.csv")),
+    row.names = FALSE
+  )
+  
+  # Categorical variables
+  cat_vars = c("sex", "gen", "res", "edu", "kid", "ses", "bcc", "ccc", "country")
+  cat_vars = cat_vars[cat_vars %in% names(dat)]
+  
+  desc_cat_by_category = purrr::map_dfr(cat_vars, function(v) {
+    dat %>%
+      filter(!is.na(category)) %>%
+      mutate(level = as.character(.data[[v]])) %>%
+      filter(!is.na(level)) %>%
+      count(category, level, name = "n") %>%
+      group_by(category) %>%
+      mutate(
+        pct = round(100 * n / sum(n), 1),
+        variable = v
+      ) %>%
+      ungroup() %>%
+      select(category, variable, level, n, pct)
+  }) %>%
+    arrange(variable, category, desc(n))
+  
+  cat("\n\nDescriptives (categorical) by category — ", label, ":\n", sep = "")
+  print(desc_cat_by_category, n = 200)
+  
+  write.csv(
+    desc_cat_by_category,
+    file.path(cdir, paste0("reviewer_", label, "_descriptives_categorical_by_category.csv")),
+    row.names = FALSE
+  )
+  
+  invisible(list(desc_cont_by_category = desc_cont_by_category,
+                 desc_cat_by_category = desc_cat_by_category))
+}
 
-cat("\n \n T-test Donation \n \n")
-var_test_result = var.test(donation ~ emo, data = df)
-t_test_result = t.test(donation ~ emo, data = df)
-output(t_test_result)
-output(report(t_test_result))
+df_included = df_soft %>% filter(soft_group == "included")
+df_excluded = df_soft %>% filter(soft_group == "excluded")
+
+# Output tables
+
+get_desc_cont_by_category = function(dat) {
+  cont_vars = c(
+    "reading_time", "evaluation_time",
+    "valence", "arousal", "anger", "compassion", "hope",
+    "aim", "wept", "wept_cor", "wept_inc", "donation", "cPEB",
+    "PCAE", "PD", "WTS", "age"
+  )
+  cont_vars = cont_vars[cont_vars %in% names(dat)]
+  
+  dat %>%
+    select(category, any_of(cont_vars)) %>%
+    pivot_longer(cols = -category, names_to = "variable", values_to = "value") %>%
+    summarise(
+      n = sum(!is.na(value)),
+      mean = mean(value, na.rm = TRUE),
+      sd = sd(value, na.rm = TRUE),
+      .by = c(category, variable)
+    ) %>%
+    arrange(variable, category)
+}
+
+get_desc_cat_by_category = function(dat) {
+  cat_vars = c("sex", "gen", "res", "edu", "kid", "ses", "bcc", "ccc", "country")
+  cat_vars = cat_vars[cat_vars %in% names(dat)]
+  
+  purrr::map_dfr(cat_vars, function(v) {
+    dat %>%
+      filter(!is.na(category)) %>%
+      mutate(level = as.character(.data[[v]])) %>%
+      filter(!is.na(level)) %>%
+      count(category, level, name = "n") %>%
+      group_by(category) %>%
+      mutate(
+        pct = round(100 * n / sum(n), 1),
+        variable = v
+      ) %>%
+      ungroup() %>%
+      select(category, variable, level, n, pct)
+  }) %>%
+    arrange(variable, category, desc(n))
+}
+
+cont_in = get_desc_cont_by_category(df_included)
+cont_ex = get_desc_cont_by_category(df_excluded)
+
+cont_comp =
+  full_join(
+    cont_in, cont_ex,
+    by = c("category", "variable"),
+    suffix = c("_incl", "_excl")
+  ) %>%
+  mutate(
+    diff_mean = mean_incl - mean_excl
+  ) %>%
+  select(
+    category, variable,
+    n_incl, mean_incl, sd_incl,
+    n_excl, mean_excl, sd_excl,
+    diff_mean
+  ) %>%
+  arrange(variable, category)
+
+cont_comp_to_save = cont_comp %>%
+  mutate(across(where(is.numeric), ~round(.x, 2)))
+
+write.csv(
+  cont_comp_to_save,file.path(cdir, "review_softcheck_comparison_continuous_by_category.csv"), row.names = FALSE)
+
+write.csv(
+  cont_comp,file.path(cdir, "review_softcheck_comparison_continuous_by_category.csv"),row.names = FALSE)
+
+cat_in = get_desc_cat_by_category(df_included)
+cat_ex = get_desc_cat_by_category(df_excluded)
+
+cat_comp =
+  full_join(
+    cat_in, cat_ex,
+    by = c("category", "variable", "level"),
+    suffix = c("_incl", "_excl")
+  ) %>%
+  mutate(
+    n_incl = tidyr::replace_na(n_incl, 0),
+    pct_incl = tidyr::replace_na(pct_incl, 0),
+    n_excl = tidyr::replace_na(n_excl, 0),
+    pct_excl = tidyr::replace_na(pct_excl, 0),
+    diff_pct = pct_incl - pct_excl
+  ) %>%
+  select(category, variable, level, n_incl, pct_incl, n_excl, pct_excl, diff_pct) %>%
+  arrange(variable, category, desc(abs(diff_pct)), desc(n_incl + n_excl))
+
+write.csv(
+  cat_comp, file.path(cdir, "review_softcheck_comparison_categorical_by_category.csv"),row.names = FALSE)
+
+cat("\nSaved comparison tables:\n",
+    "- review_softcheck_comparison_continuous_by_category.csv\n",
+    "- review_softcheck_comparison_categorical_by_category.csv\n", sep = "")
 
 ## Hypothesis 1: UNREGISTERED
 

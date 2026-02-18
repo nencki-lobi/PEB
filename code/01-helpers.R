@@ -28,6 +28,7 @@ colors_simple = c('gray','#E38421')
 part_to_scale = labels_scales
 names(part_to_scale) = parts
 
+options(scipen = 999)
 
 beauty = theme_linedraw() + theme(panel.grid = element_blank(),
                                   strip.background = element_rect(fill = "white", color = "white"),

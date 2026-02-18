@@ -160,8 +160,9 @@ subjects = dataset %>%
                              category == "HOP" & hope > 50 & arousal > 50 |
                              category == "NEU" & arousal < 50, 1, 0)) %>% # emotional stories must be rated as emotional & arousing, neutral stories as not arousing
   mutate(time_check = ifelse(reading_time > 5000 & # reading time per story must be at least 5 seconds
-                             abs(reading_time - mean(reading_time)) <= 2*sd(reading_time), 1, 0)) %>% # reading time per story must be +/- 2SD around the mean
-  select(sid, stid, category, soft_check, hard_check, time_check)
+                             abs(reading_time - mean(reading_time)) <= 2*sd(reading_time), 1, 0)) %>%  # reading time per story must be +/- 2SD around the mean
+  mutate(soft_check_excluded = ifelse(soft_check == 0, 1, 0)) %>%
+  select(sid, stid, category, soft_check, hard_check, time_check, soft_check_excluded)
 
 
 # Check how many participants get excluded per category (0 - excluded, 1 - included)
@@ -188,6 +189,10 @@ subjects %>%
   group_by(check, category) %>%
   summarize(count = n())
 
+##soft check excluded
+subjects %>%
+  group_by(soft_check_excluded, category) %>%
+  summarize(count = n())
 
 # Visual inspection of the manipulation check
 
