@@ -37,6 +37,104 @@ desc_stories = stories %>%
 
 print(desc_stories)
 
+# Manipulation checks — inferential statistics (Reviewer request)
+
+cat("\n\n")
+cat("Manipulation checks — inferential statistics\n")
+cat("\n\n")
+
+
+df = df %>%
+  mutate(category = factor(category, levels = c("NEU", "ANG", "COM", "HOP")))
+
+# Helper: run ANOVA + planned contrasts + effect sizes and 95% CI
+run_manipcheck_anova = function(data, outcome, contrasts_list, label) {
+  
+  cat("\n\n--- ", label, " (DV = ", outcome, ") ---\n", sep = "")
+  
+  fit = aov(as.formula(paste0(outcome, " ~ category")), data = data)
+  
+  cat("\nOmnibus test:\n")
+  print(summary(fit))
+  
+  eta = eta_squared(fit, partial = TRUE, ci = 0.95)
+  cat("\nOmnibus effect size (partial eta^2) with 95% CI:\n")
+  print(eta)
+  
+  emm = emmeans(fit, ~ category)
+  contr = contrast(emm, method = contrasts_list, adjust = "none")
+  contr_sum = summary(contr, infer = c(TRUE, TRUE))
+  
+  cat("\nPlanned contrasts (estimate + 95% CI):\n")
+  print(contr_sum)
+  
+  d_df = contrast_d_from_model(contr_sum, fit)
+  cat("\nEffect sizes (standardized d) with 95% CI:\n")
+  print(d_df %>% dplyr::select(contrast, d, d_low, d_high, sigma))
+  
+  invisible(list(fit = fit, eta = eta, contrasts = contr_sum, d = d_df))
+}
+
+# Planned contrasts
+
+# Valence
+contrasts_valence = list(
+  HOP_vs_NEU = c(-1, 0, 0, 1),
+  ANG_vs_NEU = c(-1, 1, 0, 0),
+  COM_vs_NEU = c(-1, 0, 1, 0))
+
+# Arousal
+contrasts_arousal = list(
+  EMO_vs_NEU = c(-1, 1/3, 1/3, 1/3))
+
+# Specificity
+contrasts_anger = list(
+  ANG_vs_others = c(-1/3, 1, -1/3, -1/3))
+contrasts_compassion = list(
+  COM_vs_others = c(-1/3, -1/3, 1, -1/3))
+contrasts_hope = list(
+  HOP_vs_others = c(-1/3, -1/3, -1/3, 1))
+
+if ("valence" %in% names(df)) {
+  res_valence = run_manipcheck_anova(
+    data = df,
+    outcome = "valence",
+    contrasts_list = contrasts_valence,
+    label = "Manipulation check: Valence")
+}
+
+if ("arousal" %in% names(df)) {
+  res_arousal = run_manipcheck_anova(
+    data = df,
+    outcome = "arousal",
+    contrasts_list = contrasts_arousal,
+    label = "Manipulation check: Arousal")
+}
+
+if ("anger" %in% names(df)) {
+  res_anger = run_manipcheck_anova(
+    data = df,
+    outcome = "anger",
+    contrasts_list = contrasts_anger,
+    label = "Manipulation check: Anger specificity")
+}
+
+if ("compassion" %in% names(df)) {
+  res_comp = run_manipcheck_anova(
+    data = df,
+    outcome = "compassion",
+    contrasts_list = contrasts_compassion,
+    label = "Manipulation check: Compassion specificity" )
+}
+
+if ("hope" %in% names(df)) {
+  res_hope = run_manipcheck_anova(
+    data = df,
+    outcome = "hope",
+    contrasts_list = contrasts_hope,
+    label = "Manipulation check: Hope specificity")
+}
+
 # Descriptives for the exploratory analyses
 cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive to manipulation (included) and not sensitive (excluded)\n\n")
 
@@ -311,7 +409,7 @@ cat("\n \n Hypothesis 4: Regression models \n \n")
 
 cat("\n \n cPEB model: without interactions \n \n")
 model1 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-           + sex + age + res + edu + kid + ses, data = df)
+            + sex + age + res + edu + kid + ses, data = df)
 
 output(summary(model1))
 tidy_model = tidy.up(model1)
@@ -325,9 +423,9 @@ check_assumptions(model1)
 cat("\n \n cPEB model: with interactions \n \n")
 model2 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
             + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
-           + category:ccc + category:PCAE + category:PD + category:WTS 
-           + category:sex + category:age + category:res + category:edu 
-           + category:kid + category:ses, data = df) 
+            + category:ccc + category:PCAE + category:PD + category:WTS 
+            + category:sex + category:age + category:res + category:edu 
+            + category:kid + category:ses, data = df) 
 
 output(summary(model2))
 tidy_model = tidy.up(model2)
@@ -347,7 +445,7 @@ output(int_improvement)
 
 cat("\n \n WEPT model: without interactions \n \n")
 model1 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-           + sex + age + res + edu + kid + ses, data = df)
+            + sex + age + res + edu + kid + ses, data = df)
 
 output(summary(model1))
 tidy_model = tidy.up(model1)
@@ -361,9 +459,9 @@ check_assumptions(model1)
 cat("\n \n WEPT model: with interactions \n \n")
 model2 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
             + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
-           + category:ccc + category:PCAE + category:PD + category:WTS 
-           + category:sex + category:age + category:res + category:edu 
-           + category:kid + category:ses, data = df) 
+            + category:ccc + category:PCAE + category:PD + category:WTS 
+            + category:sex + category:age + category:res + category:edu 
+            + category:kid + category:ses, data = df) 
 
 output(summary(model2))
 tidy_model = tidy.up(model2)
@@ -382,7 +480,7 @@ output(int_improvement)
 
 cat("\n \n Donation model: without interactions \n \n")
 model1 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-           + sex + age + res + edu + kid + ses, data = df)
+            + sex + age + res + edu + kid + ses, data = df)
 
 output(summary(model1))
 tidy_model = tidy.up(model1)
@@ -395,9 +493,9 @@ check_assumptions(model1)
 cat("\n \n Donation model: with interactions \n \n")
 model2 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
             + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
-           + category:ccc + category:PCAE + category:PD + category:WTS 
-           + category:sex + category:age + category:res + category:edu 
-           + category:kid + category:ses, data = df) 
+            + category:ccc + category:PCAE + category:PD + category:WTS 
+            + category:sex + category:age + category:res + category:edu 
+            + category:kid + category:ses, data = df) 
 
 output(summary(model2))
 tidy_model = tidy.up(model2)

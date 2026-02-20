@@ -34,3 +34,19 @@ beauty = theme_linedraw() + theme(panel.grid = element_blank(),
                                   strip.background = element_rect(fill = "white", color = "white"),
                                   strip.text = element_text(colour = "black", size = 12),
                                   aspect.ratio = 1)
+
+contrast_d_from_model = function(contr_sum, fit) {
+  # contr_sum = summary(contr, infer=c(TRUE, TRUE))
+  sig = sigma(fit)
+  tcrit = qt(0.975, df = df.residual(fit))
+  
+  contr_sum %>%
+    as.data.frame() %>%
+    mutate(
+      d = estimate / sig,
+      d_low = (estimate - tcrit * SE) / sig,
+      d_high = (estimate + tcrit * SE) / sig,
+      sigma = sig,
+      df_resid = df.residual(fit)
+    )
+}
