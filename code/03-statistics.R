@@ -314,6 +314,28 @@ cat("\nSaved comparison tables:\n",
     "- review_softcheck_comparison_continuous_by_category.csv\n",
     "- review_softcheck_comparison_categorical_by_category.csv\n", sep = "")
 
+## Hypothesis 1:
+
+cat("\n \n Hypothesis 1: t-tests \n \n")
+
+cat("\n \n T-test cPEB \n \n")
+var_test_result = var.test(cPEB ~ emo, data = df)
+t_test_result = t.test(cPEB ~ emo, data = df)
+output(t_test_result)
+output(report(t_test_result))
+
+cat("\n \n T-test WEPT \n \n")
+var_test_result = var.test(wept ~ emo, data = df)
+t_test_result = t.test(wept ~ emo, data = df)
+output(t_test_result)
+output(report(t_test_result))
+
+cat("\n \n T-test Donation \n \n")
+var_test_result = var.test(donation ~ emo, data = df)
+t_test_result = t.test(donation ~ emo, data = df)
+output(t_test_result)
+output(report(t_test_result))
+
 ## Hypothesis 1: UNREGISTERED
 
 cat("\n \n Hypothesis 1: MANOVA (UNREGISTERED) \n \n")
@@ -365,6 +387,10 @@ probabilities = proportions(observed, margin = 2)
 output(probabilities*100)
 output(chi2)
 
+cramers_v = effectsize::cramers_v(chi2, ci = 0.95)
+cat("\nEffect size (Cramer's V, 95% CI):\n")
+print(cramers_v)
+
 ## Hypothesis 3: UNREGISTERED
 
 cat("\n \n Hypothesis 3: Chi-square test with NEU as baseline (UNREGISTERED) \n \n")
@@ -374,7 +400,7 @@ baseline = probabilities[,"NEU"]
 output(chisq.test(observed[,"ANG"], p = baseline))
 output(chisq.test(observed[,"COM"], p = baseline))
 output(chisq.test(observed[,"HOP"], p = baseline))
-output(chisq.test(observed[,"NEU"], p = baseline)) # Just a sanity check...
+output(chisq.test(observed[,"NEU"], p = baseline))
 
 # Hypothesis 4
 
@@ -383,10 +409,12 @@ check_assumptions = function(model) {
   cat("Durbin-Watson Test for Independence:\n")
   print(dw_test)
   cat("\n")
+  
   ncv_test = ncvTest(model)
   cat("Non-constant Variance Test for Homoscedasticity:\n")
   print(ncv_test)
   cat("\n")
+  
   shapiro_test = shapiro.test(residuals(model))
   cat("Shapiro-Wilk Test for Normality of Residuals:\n")
   print(shapiro_test)
@@ -395,118 +423,209 @@ check_assumptions = function(model) {
 
 tidy.up = function(model) {
   tidy_model = tidy(model)
-  tidy_model$stats = ifelse(tidy_model$p.value > 0.05, "ns", 
-                            ifelse(tidy_model$p.value < 0.001, "p<0.001", 
-                                   formatC(tidy_model$p.value, format = "f", digits = 2)))
+  tidy_model$stats = ifelse(
+    tidy_model$p.value > 0.05, "ns",
+    ifelse(tidy_model$p.value < 0.001, "p<0.001",
+           formatC(tidy_model$p.value, format = "f", digits = 2))
+  )
   tidy_model$estimate = round(tidy_model$estimate, 3)
   tidy_model = tidy_model[, c("term", "estimate", "stats")]
   return(tidy_model)
 }
 
-cat("\n \n Hypothesis 4: Regression models \n \n")
+vif_report = function(model) {
+  v = car::vif(model)
+  
+  if (is.matrix(v)) {
+    vif_df = data.frame(
+      term = rownames(v),
+      GVIF = v[, "GVIF"],
+      Df = v[, "Df"],
+      GVIF_adj = v[, "GVIF"]^(1 / (2 * v[, "Df"])),
+      row.names = NULL
+    )
+    max_v = max(vif_df$GVIF_adj, na.rm = TRUE)
+    cat("VIF (GVIF adjusted) summary:\n")
+    cat("  Max GVIF^(1/(2*Df)) =", round(max_v, 2), "\n\n")
+  } else {
+    vif_df = data.frame(
+      term = names(v),
+      VIF = as.numeric(v),
+      row.names = NULL
+    )
+    max_v = max(vif_df$VIF, na.rm = TRUE)
+    cat("VIF summary:\n")
+    cat("  Max VIF =", round(max_v, 2), "\n\n")
+  }
+  
+  print(vif_df)
+  invisible(vif_df)
+}
+
+run_regression_block = function(model_main, model_int, label) {
+  cat("\n\n=====================================\n")
+  cat(label, "\n")
+  cat("=====================================\n\n")
+  
+  # Main-effects model
+  cat("\n--- Main-effects model (no interactions) ---\n\n")
+  output(summary(model_main))
+  
+  cat("\nTidy coefficients (estimate + p):\n")
+  print(tidy.up(model_main))
+  
+  cat("\nAssumptions tests:\n")
+  check_assumptions(model_main)
+  
+  cat("\nMulticollinearity (VIF):\n")
+  vif_report(model_main)
+  
+  # Interaction model
+  cat("\n--- Interaction model ---\n\n")
+  output(summary(model_int))
+  
+  cat("\nTidy coefficients (estimate + p):\n")
+  print(tidy.up(model_int))
+  
+  cat("\nAssumptions tests:\n")
+  check_assumptions(model_int)
+  
+  cat("\nModel comparison (Δ explained variance):\n")
+  int_improvement = anova(model_main, model_int)
+  output(int_improvement)
+}
+
+# Conditional means (estimated marginal means) for Table 3 - review
+
+get_emm_category = function(model,
+                            nuisance_candidates = c("sex", "gen", "res", "edu", "kid", "ses", "bcc", "ccc"),
+                            rg_limit = 50000) {
+  mf = model.frame(model)
+  nuisance_factors = nuisance_candidates[nuisance_candidates %in% names(mf)]
+  
+  emmeans::emmeans(
+    model,
+    ~ category,
+    nuisance = nuisance_factors,
+    rg.limit = rg_limit
+  )
+}
+
+format_emm = function(emm_obj, digits = 2) {
+  as.data.frame(summary(emm_obj, infer = c(TRUE, TRUE))) %>%
+    transmute(
+      category = category,
+      mean = emmean,
+      low = lower.CL,
+      high = upper.CL,
+      adj_mean_ci = sprintf(
+        paste0("%.", digits, "f [%.", digits, "f, %.", digits, "f]"),
+        mean, low, high
+      )
+    ) %>%
+    mutate(category = factor(category, levels = c("NEU", "ANG", "COM", "HOP"))) %>%
+    arrange(category)
+}
+
+make_emm_table = function(model_wept, model_don, digits = 2, rg_limit = 50000) {
+  
+  emm_wept = get_emm_category(model_wept, rg_limit = rg_limit)
+  emm_don = get_emm_category(model_don, rg_limit = rg_limit)
+  
+  tab_wept = format_emm(emm_wept, digits = digits) %>%
+    select(category, WEPT = adj_mean_ci)
+  
+  tab_don = format_emm(emm_don, digits = digits) %>%
+    select(category, Donations = adj_mean_ci)
+  
+  tab = tab_wept %>%
+    left_join(tab_don, by = "category") %>%
+    mutate(category = as.character(category))
+  
+  return(tab)
+}
+
+cat("\n\nHypothesis 4: Regression models\n")
 
 # cPEB
 
-cat("\n \n cPEB model: without interactions \n \n")
-model1 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses, data = df)
+model_cPEB_main = lm(
+  cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS +
+    sex + age + res + edu + kid + ses,
+  data = df
+)
 
-output(summary(model1))
-tidy_model = tidy.up(model1)
-output_file = file.path(cdir, "model_summary_cPEB.csv")
-write.csv(tidy_model, output_file, row.names = FALSE)
+model_cPEB_int = lm(
+  cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS +
+    sex + age + res + edu + kid + ses +
+    category:valence + category:arousal + category:bcc +
+    category:ccc + category:PCAE + category:PD + category:WTS +
+    category:sex + category:age + category:res + category:edu +
+    category:kid + category:ses,
+  data = df
+)
 
-cat("\n \n Assumptions tests \n \n")
+run_regression_block(model_cPEB_main, model_cPEB_int, "cPEB")
 
-check_assumptions(model1)
+cat("\n\nConditional means from preregistered main-effects regression models\n")
+cat("Values are adjusted means by condition with 95% CI\n\n")
 
-cat("\n \n cPEB model: with interactions \n \n")
-model2 = lm(cPEB ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
-            + category:ccc + category:PCAE + category:PD + category:WTS 
-            + category:sex + category:age + category:res + category:edu 
-            + category:kid + category:ses, data = df) 
-
-output(summary(model2))
-tidy_model = tidy.up(model2)
-output_file = file.path(cdir, "model_summary_cPEB_int.csv")
-write.csv(tidy_model, output_file, row.names = FALSE)
-
-cat("\n \n Assumptions tests \n \n")
-
-check_assumptions(model2)
-
-cat("\n \n cPEB models: differences in explained variance\n \n")
-int_improvement = anova(model1,model2)
-output(int_improvement)
-
+emm_cPEB = format_emm(get_emm_category(model_cPEB_main)) %>%
+  select(category, cPEB = adj_mean_ci)
+print(emm_cPEB, row.names = FALSE)
 
 # WEPT
 
-cat("\n \n WEPT model: without interactions \n \n")
-model1 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses, data = df)
+model_WEPT_main = lm(
+  wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS +
+    sex + age + res + edu + kid + ses,
+  data = df
+)
 
-output(summary(model1))
-tidy_model = tidy.up(model1)
-output_file = file.path(cdir, "model_summary_WEPT.csv")
-write.csv(tidy_model, output_file, row.names = FALSE)
+model_WEPT_int = lm(
+  wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS +
+    sex + age + res + edu + kid + ses +
+    category:valence + category:arousal + category:bcc +
+    category:ccc + category:PCAE + category:PD + category:WTS +
+    category:sex + category:age + category:res + category:edu +
+    category:kid + category:ses,
+  data = df
+)
 
-cat("\n \n Assumptions tests \n \n")
+run_regression_block(model_WEPT_main, model_WEPT_int, "WEPT")
 
-check_assumptions(model1)
+cat("\nConditional means from preregistered main-effects regression models\n")
+cat("Adjusted means by condition with 95% CI\n")
 
-cat("\n \n WEPT model: with interactions \n \n")
-model2 = lm(wept ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
-            + category:ccc + category:PCAE + category:PD + category:WTS 
-            + category:sex + category:age + category:res + category:edu 
-            + category:kid + category:ses, data = df) 
+emm_WEPT = format_emm(get_emm_category(model_WEPT_main)) %>%
+  select(category, WEPT = adj_mean_ci)
+print(emm_WEPT, row.names = FALSE)
 
-output(summary(model2))
-tidy_model = tidy.up(model2)
-output_file = file.path(cdir, "model_summary_WEPT_int.csv")
-write.csv(tidy_model, output_file, row.names = FALSE)
+# Donation
 
-cat("\n \n Assumptions tests \n \n")
+model_donation_main = lm(
+  donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS +
+    sex + age + res + edu + kid + ses,
+  data = df
+)
 
-check_assumptions(model2)
+model_donation_int = lm(
+  donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS +
+    sex + age + res + edu + kid + ses +
+    category:valence + category:arousal + category:bcc +
+    category:ccc + category:PCAE + category:PD + category:WTS +
+    category:sex + category:age + category:res + category:edu +
+    category:kid + category:ses,
+  data = df
+)
 
-cat("\n \n WEPT models: differences in explained variance\n \n")
-int_improvement = anova(model1,model2)
-output(int_improvement)
+run_regression_block(model_donation_main, model_donation_int, "DONATION")
 
-# donation
+cat("\nConditional means from preregistered main-effects regression models\n")
+cat("Adjusted means by condition with 95% CI\n")
 
-cat("\n \n Donation model: without interactions \n \n")
-model1 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses, data = df)
-
-output(summary(model1))
-tidy_model = tidy.up(model1)
-output_file = file.path(cdir, "model_summary_donation.csv")
-write.csv(tidy_model, output_file, row.names = FALSE)
-
-cat("\n \n Assumptions tests \n \n")
-check_assumptions(model1)
-
-cat("\n \n Donation model: with interactions \n \n")
-model2 = lm(donation ~ category + valence + arousal + bcc + ccc + PCAE + PD + WTS 
-            + sex + age + res + edu + kid + ses + category:valence + category:arousal + category:bcc 
-            + category:ccc + category:PCAE + category:PD + category:WTS 
-            + category:sex + category:age + category:res + category:edu 
-            + category:kid + category:ses, data = df) 
-
-output(summary(model2))
-tidy_model = tidy.up(model2)
-output_file = file.path(cdir, "model_summary_donation_int.csv")
-write.csv(tidy_model, output_file, row.names = FALSE)
-
-cat("\n \n Assumptions tests \n \n")
-check_assumptions(model2)
-
-cat("\n \n Donation models: differences in explained variance\n \n")
-int_improvement = anova(model1,model2)
-output(int_improvement)
+emm_donation = format_emm(get_emm_category(model_donation_main)) %>%
+  select(category, Donations = adj_mean_ci)
+print(emm_donation, row.names = FALSE)
 
 sink()
