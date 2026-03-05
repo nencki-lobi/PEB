@@ -146,72 +146,6 @@ soft_group = subjects %>%
 
 df_soft = df %>% left_join(soft_group, by = "sid")
 
-make_desc_tables_by_category = function(dat, label, cdir) {
-  
-  # Continuous variables
-  cont_vars = c(
-    "reading_time", "evaluation_time",
-    "valence", "arousal", "anger", "compassion", "hope",
-    "aim", "wept", "wept_cor", "wept_inc", "donation", "cPEB",
-    "PCAE", "PD", "WTS", "age"
-  )
-  cont_vars = cont_vars[cont_vars %in% names(dat)]
-  
-  desc_cont_by_category = dat %>%
-    select(category, any_of(cont_vars)) %>%
-    pivot_longer(cols = -category, names_to = "variable", values_to = "value") %>%
-    summarise(
-      n = sum(!is.na(value)),
-      mean = mean(value, na.rm = TRUE),
-      sd = sd(value, na.rm = TRUE),
-      median = median(value, na.rm = TRUE),
-      iqr = IQR(value, na.rm = TRUE),
-      .by = c(category, variable)
-    ) %>%
-    arrange(variable, category)
-  
-  cat("\n\nDescriptives (continuous) by category — ", label, ":\n", sep = "")
-  print(desc_cont_by_category)
-  
-  write.csv(
-    desc_cont_by_category,
-    file.path(cdir, paste0("reviewer_", label, "_descriptives_continuous_by_category.csv")),
-    row.names = FALSE
-  )
-  
-  # Categorical variables
-  cat_vars = c("sex", "gen", "res", "edu", "kid", "ses", "bcc", "ccc", "country")
-  cat_vars = cat_vars[cat_vars %in% names(dat)]
-  
-  desc_cat_by_category = purrr::map_dfr(cat_vars, function(v) {
-    dat %>%
-      filter(!is.na(category)) %>%
-      mutate(level = as.character(.data[[v]])) %>%
-      filter(!is.na(level)) %>%
-      count(category, level, name = "n") %>%
-      group_by(category) %>%
-      mutate(
-        pct = round(100 * n / sum(n), 1),
-        variable = v
-      ) %>%
-      ungroup() %>%
-      select(category, variable, level, n, pct)
-  }) %>%
-    arrange(variable, category, desc(n))
-  
-  cat("\n\nDescriptives (categorical) by category — ", label, ":\n", sep = "")
-  print(desc_cat_by_category, n = 200)
-  
-  write.csv(
-    desc_cat_by_category,
-    file.path(cdir, paste0("reviewer_", label, "_descriptives_categorical_by_category.csv")),
-    row.names = FALSE
-  )
-  
-  invisible(list(desc_cont_by_category = desc_cont_by_category,
-                 desc_cat_by_category = desc_cat_by_category))
-}
-
 df_included = df_soft %>% filter(soft_group == "included")
 df_excluded = df_soft %>% filter(soft_group == "excluded")
 
@@ -525,24 +459,6 @@ format_emm = function(emm_obj, digits = 2) {
     ) %>%
     mutate(category = factor(category, levels = c("NEU", "ANG", "COM", "HOP"))) %>%
     arrange(category)
-}
-
-make_emm_table = function(model_wept, model_don, digits = 2, rg_limit = 50000) {
-  
-  emm_wept = get_emm_category(model_wept, rg_limit = rg_limit)
-  emm_don = get_emm_category(model_don, rg_limit = rg_limit)
-  
-  tab_wept = format_emm(emm_wept, digits = digits) %>%
-    select(category, WEPT = adj_mean_ci)
-  
-  tab_don = format_emm(emm_don, digits = digits) %>%
-    select(category, Donations = adj_mean_ci)
-  
-  tab = tab_wept %>%
-    left_join(tab_don, by = "category") %>%
-    mutate(category = as.character(category))
-  
-  return(tab)
 }
 
 cat("\n\nHypothesis 4: Regression models\n")
