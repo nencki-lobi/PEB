@@ -37,7 +37,7 @@ desc_stories = stories %>%
 
 print(desc_stories)
 
-# Manipulation checks — inferential statistics (Reviewer request)
+# Manipulation checks — inferential statistics (Reviewer's request)
 
 cat("\n\n")
 cat("Manipulation checks — inferential statistics\n")
@@ -47,7 +47,7 @@ cat("\n\n")
 df = df %>%
   mutate(category = factor(category, levels = c("NEU", "ANG", "COM", "HOP")))
 
-# Helper: run ANOVA + planned contrasts + effect sizes and 95% CI
+## Helper: run ANOVA + planned contrasts + effect sizes and 95% CI
 
 contrast_d_from_model = function(contr_sum, fit) {
   # contr_sum = summary(contr, infer=c(TRUE, TRUE))
@@ -91,19 +91,19 @@ run_manipcheck_anova = function(data, outcome, contrasts_list, label) {
   invisible(list(fit = fit, eta = eta, contrasts = contr_sum, d = d_df))
 }
 
-# Planned contrasts
+## Planned contrasts
 
-# Valence
+### Valence
 contrasts_valence = list(
   HOP_vs_NEU = c(-1, 0, 0, 1),
   ANG_vs_NEU = c(-1, 1, 0, 0),
   COM_vs_NEU = c(-1, 0, 1, 0))
 
-# Arousal
+### Arousal
 contrasts_arousal = list(
   EMO_vs_NEU = c(-1, 1/3, 1/3, 1/3))
 
-# Specificity
+### Specificity
 contrasts_anger = list(
   ANG_vs_others = c(-1/3, 1, -1/3, -1/3))
 contrasts_compassion = list(
@@ -154,7 +154,6 @@ if ("hope" %in% names(df)) {
 # Descriptives for the exploratory analyses
 cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive to manipulation (included) and not sensitive (excluded)\n\n")
 
-# attach participant-level soft_check group to your analysis dataset
 soft_group = subjects %>%
   distinct(sid, soft_check) %>%
   mutate(soft_group = ifelse(soft_check == 1, "included", "excluded")) %>%
@@ -165,7 +164,7 @@ df_soft = df %>% left_join(soft_group, by = "sid")
 df_included = df_soft %>% filter(soft_group == "included")
 df_excluded = df_soft %>% filter(soft_group == "excluded")
 
-# Output tables
+## Output tables
 
 get_desc_cont_by_category = function(dat) {
   cont_vars = c(
@@ -264,7 +263,7 @@ cat("\nSaved comparison tables:\n",
     "- review_softcheck_comparison_continuous_by_category.csv\n",
     "- review_softcheck_comparison_categorical_by_category.csv\n", sep = "")
 
-## Hypothesis 1:
+# Hypothesis 1:
 
 cat("\n \n Hypothesis 1: t-tests \n \n")
 

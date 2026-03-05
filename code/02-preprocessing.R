@@ -189,7 +189,7 @@ subjects %>%
   group_by(check, category) %>%
   summarize(count = n())
 
-##soft check excluded
+## soft check excluded
 subjects %>%
   group_by(soft_check_excluded, category) %>%
   summarize(count = n())
