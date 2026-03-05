@@ -148,17 +148,17 @@ if ("hope" %in% names(df)) {
 }
 
 # Descriptives for the exploratory analyses
-cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive to manipulation (included) and not sensitive (excluded)\n\n")
+cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive (included) and not sensitive (excluded) to manipulation\n\n")
 
-soft_group = subjects %>%
-  distinct(sid, soft_check) %>%
-  mutate(soft_group = ifelse(soft_check == 1, "included", "excluded")) %>%
-  select(sid, soft_group)
+df_exploratory = subjects %>% 
+  select(sid, soft_check) %>%
+  mutate(group = factor(soft_check, 
+                        levels = c("1", "0"),
+                        labels = c("included", "excluded"))) %>%
+  left_join(df, by = "sid")
 
-df_soft = df %>% left_join(soft_group, by = "sid")
-
-df_included = df_soft %>% filter(soft_group == "included")
-df_excluded = df_soft %>% filter(soft_group == "excluded")
+df_included = df_exploratory %>% filter(group == "included")
+df_excluded = df_exploratory %>% filter(group == "excluded")
 
 ## Output tables
 
