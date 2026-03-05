@@ -147,7 +147,6 @@ if ("hope" %in% names(df)) {
 }
 
 # Descriptives for the exploratory analyses
-cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive (included) and not sensitive (excluded) to manipulation\n\n")
 
 df_exploratory = subjects %>% 
   select(sid, soft_check) %>%
@@ -217,9 +216,6 @@ cont_comp =
   arrange(variable, category) %>%
   mutate(across(where(is.numeric), ~round(.x, 2)))
 
-write.csv(
-  cont_comp, file.path(tdir, "manipulation_check_continuous.csv"), row.names = FALSE)
-
 cat_in = get_desc_cat_by_category(df_included)
 cat_ex = get_desc_cat_by_category(df_excluded)
 
@@ -238,12 +234,19 @@ cat_comp =
   ) %>%
   arrange(variable, category, desc(abs(diff_pct)), desc(n_incl + n_excl))
 
-write.csv(
-  cat_comp, file.path(tdir, "manipulation_check_categorical.csv"), row.names = FALSE)
-
-cat("\nSaved comparison tables:\n",
-    "- manipulation_check_continuous.csv\n",
-    "- manipulation_check_categorical.csv\n", sep = "")
+if (type == "registered") {
+  cat("\n\nDecsriptives for exploratory analyses: comparing groups sensitive (included) and not sensitive (excluded) to manipulation\n\n")
+  
+  write.csv(
+    cont_comp, file.path(tdir, "manipulation_check_continuous.csv"), row.names = FALSE)
+  
+  write.csv(
+    cat_comp, file.path(tdir, "manipulation_check_categorical.csv"), row.names = FALSE)
+  
+  cat("\nSaved comparison tables:\n",
+      "- manipulation_check_continuous.csv\n",
+      "- manipulation_check_categorical.csv\n", sep = "")
+}
 
 # Hypothesis 1:
 
