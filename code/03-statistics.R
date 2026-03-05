@@ -43,10 +43,6 @@ cat("\n\n")
 cat("Manipulation checks — inferential statistics\n")
 cat("\n\n")
 
-
-df = df %>%
-  mutate(category = factor(category, levels = c("NEU", "ANG", "COM", "HOP")))
-
 ## Helper: run ANOVA + planned contrasts + effect sizes and 95% CI
 
 contrast_d_from_model = function(contr_sum, fit) {
@@ -193,7 +189,6 @@ get_desc_cat_by_category = function(dat) {
   
   purrr::map_dfr(cat_vars, function(v) {
     dat %>%
-      filter(!is.na(category)) %>%
       mutate(level = as.character(.data[[v]])) %>%
       filter(!is.na(level)) %>%
       count(category, level, name = "n") %>%
@@ -220,22 +215,11 @@ cont_comp =
   mutate(
     diff_mean = mean_incl - mean_excl
   ) %>%
-  select(
-    category, variable,
-    n_incl, mean_incl, sd_incl,
-    n_excl, mean_excl, sd_excl,
-    diff_mean
-  ) %>%
-  arrange(variable, category)
-
-cont_comp_to_save = cont_comp %>%
+  arrange(variable, category) %>%
   mutate(across(where(is.numeric), ~round(.x, 2)))
 
 write.csv(
-  cont_comp_to_save,file.path(cdir, "review_softcheck_comparison_continuous_by_category.csv"), row.names = FALSE)
-
-write.csv(
-  cont_comp,file.path(cdir, "review_softcheck_comparison_continuous_by_category.csv"),row.names = FALSE)
+  cont_comp, file.path(cdir, "review_softcheck_comparison_continuous_by_category.csv"), row.names = FALSE)
 
 cat_in = get_desc_cat_by_category(df_included)
 cat_ex = get_desc_cat_by_category(df_excluded)
@@ -253,15 +237,10 @@ cat_comp =
     pct_excl = tidyr::replace_na(pct_excl, 0),
     diff_pct = pct_incl - pct_excl
   ) %>%
-  select(category, variable, level, n_incl, pct_incl, n_excl, pct_excl, diff_pct) %>%
   arrange(variable, category, desc(abs(diff_pct)), desc(n_incl + n_excl))
 
 write.csv(
-  cat_comp, file.path(cdir, "review_softcheck_comparison_categorical_by_category.csv"),row.names = FALSE)
-
-cat("\nSaved comparison tables:\n",
-    "- review_softcheck_comparison_continuous_by_category.csv\n",
-    "- review_softcheck_comparison_categorical_by_category.csv\n", sep = "")
+  cat_comp, file.path(cdir, "review_softcheck_comparison_categorical_by_category.csv"), row.names = FALSE)
 
 # Hypothesis 1:
 
