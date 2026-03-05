@@ -3,6 +3,7 @@ title: "Impact of emotions on proenvironmental behaviours"
 output: html_document
 params:
   country: "PL" # PL - Poland, NO - Norway
+  type: "registered" # registered, non-registered
 ---
 
 ```{r include=FALSE, echo=FALSE}

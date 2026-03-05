@@ -257,7 +257,7 @@ plot.check(ptitle, ftitle, selected)
 
 ## To use the whole dataset (as preregistered), use the following:
 
-selected = subjects # use whole dataset (as preregistered)
+# selected = subjects # use whole dataset (as preregistered)
 
 ## To filter data based on selected exclusion criteria, use one of the following:
 
@@ -270,6 +270,12 @@ selected = subjects # use whole dataset (as preregistered)
 
 # selected = subset(subjects, soft_check == 0)
 # selected = subset(subjects, hard_check == 0)
+
+if (type == "registered") {
+  selected = subjects
+} else {
+  selected = subset(subjects, soft_check == 1)
+}
 
 
 # Final, cleaned dataset that will be used for subsequent analysis

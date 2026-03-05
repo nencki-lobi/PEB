@@ -4,8 +4,11 @@ if (!dir.exists(odir)) {dir.create(odir)}
 cdir = file.path(odir, params$country)
 if (!dir.exists(cdir)) {dir.create(cdir)}
 
+tdir = file.path(cdir, params$type)
+if (!dir.exists(tdir)) {dir.create(tdir)}
+
 sdir.create = function(name) {
-  sdir = file.path(cdir, name)
+  sdir = file.path(tdir, name)
   if (!dir.exists(sdir)) {dir.create(sdir)}
   sdir}
 
@@ -16,6 +19,8 @@ output = function(content) {
 
 country = params$country
 country_full = if_else(country == "PL", "Poland", "Norway")
+
+type = params$type
 
 parts = 0:4
 

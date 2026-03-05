@@ -1,4 +1,4 @@
-# Descriptive statistics - `r params$country`
+# Descriptive statistics - `r params$country` - `r params$type`
 
 ```{r include=FALSE, echo=FALSE}
 df = clean_dataset
@@ -61,5 +61,5 @@ tbl
 
 tbl %>%
   as_gt() %>%
-  gt::gtsave(filename = "descriptives.docx", path = file.path(paste0(".",odir), country))
+  gt::gtsave(filename = "descriptives.docx", path = file.path(paste0(".",odir), country, type))
 ```

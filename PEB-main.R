@@ -19,6 +19,11 @@ for (i in c("PL", "NO")) {
   cdir = file.path(odir, i)
   if (!dir.exists(cdir)) {dir.create(cdir)}
   
-  rmarkdown::render("PEB.Rmd", 
-                    params = list(country = i),
-                    output_file=paste0("./output/", i, "/descriptives.html"))}
+  for (j in c("registered", "non-registered")) {
+  
+    tdir = file.path(cdir, j)
+    if (!dir.exists(tdir)) {dir.create(tdir)}
+    
+    rmarkdown::render("PEB.Rmd", 
+                      params = list(country = i, type = j),
+                      output_file=paste0(tdir, "/descriptives.html"))}}

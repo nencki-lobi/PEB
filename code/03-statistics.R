@@ -1,4 +1,4 @@
-sink(file.path(cdir, "statistics.txt"))
+sink(file.path(tdir, paste0("report_", country, "_", type, ".txt")))
 
 df = clean_dataset
 
@@ -218,7 +218,7 @@ cont_comp =
   mutate(across(where(is.numeric), ~round(.x, 2)))
 
 write.csv(
-  cont_comp, file.path(cdir, "manipulation_check_comparison_continuous_by_category.csv"), row.names = FALSE)
+  cont_comp, file.path(tdir, "manipulation_check_continuous.csv"), row.names = FALSE)
 
 cat_in = get_desc_cat_by_category(df_included)
 cat_ex = get_desc_cat_by_category(df_excluded)
@@ -239,11 +239,11 @@ cat_comp =
   arrange(variable, category, desc(abs(diff_pct)), desc(n_incl + n_excl))
 
 write.csv(
-  cat_comp, file.path(cdir, "manipulation_check_comparison_categorical_by_category.csv"), row.names = FALSE)
+  cat_comp, file.path(tdir, "manipulation_check_categorical.csv"), row.names = FALSE)
 
 cat("\nSaved comparison tables:\n",
-    "- manipulation_check_comparison_continuous_by_category.csv\n",
-    "- manipulation_check_comparison_categorical_by_category.csv\n", sep = "")
+    "- manipulation_check_continuous.csv\n",
+    "- manipulation_check_categorical.csv\n", sep = "")
 
 # Hypothesis 1:
 
