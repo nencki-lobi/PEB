@@ -41,7 +41,6 @@ print(desc_stories)
 
 cat("\n\n")
 cat("Manipulation checks — inferential statistics\n")
-cat("\n\n")
 
 ## Helper: run ANOVA + planned contrasts + effect sizes and 95% CI
 
@@ -219,7 +218,7 @@ cont_comp =
   mutate(across(where(is.numeric), ~round(.x, 2)))
 
 write.csv(
-  cont_comp, file.path(cdir, "review_softcheck_comparison_continuous_by_category.csv"), row.names = FALSE)
+  cont_comp, file.path(cdir, "manipulation_check_comparison_continuous_by_category.csv"), row.names = FALSE)
 
 cat_in = get_desc_cat_by_category(df_included)
 cat_ex = get_desc_cat_by_category(df_excluded)
@@ -240,11 +239,15 @@ cat_comp =
   arrange(variable, category, desc(abs(diff_pct)), desc(n_incl + n_excl))
 
 write.csv(
-  cat_comp, file.path(cdir, "review_softcheck_comparison_categorical_by_category.csv"), row.names = FALSE)
+  cat_comp, file.path(cdir, "manipulation_check_comparison_categorical_by_category.csv"), row.names = FALSE)
+
+cat("\nSaved comparison tables:\n",
+    "- manipulation_check_comparison_continuous_by_category.csv\n",
+    "- manipulation_check_comparison_categorical_by_category.csv\n", sep = "")
 
 # Hypothesis 1:
 
-cat("\n \n Hypothesis 1: t-tests \n \n")
+cat("\n \n Hypothesis 1: t-tests \n")
 
 cat("\n \n T-test cPEB \n \n")
 var_test_result = var.test(cPEB ~ emo, data = df)
@@ -266,7 +269,7 @@ output(report(t_test_result))
 
 ## Hypothesis 1: UNREGISTERED
 
-cat("\n \n Hypothesis 1: MANOVA (UNREGISTERED) \n \n")
+cat("\n \n Hypothesis 1: MANOVA (UNREGISTERED) \n \n \n")
 
 manova_result = manova(cbind(wept, donation) ~ emo, data = df)
 output(summary.aov(manova_result))
@@ -274,7 +277,7 @@ output(report(manova_result))
 
 # Hypothesis 2
 
-cat("\n \n Hypothesis 2: ANOVA \n \n")
+cat("\n \n Hypothesis 2: ANOVA \n")
 
 cat("\n \n ANOVA cPEB \n \n")
 anova_result = aov(cPEB ~ category, data = df)
@@ -305,7 +308,7 @@ print(posthoc_result)
 
 # Hypothesis 3
 
-cat("\n \n Hypothesis 3: Chi-square test \n \n")
+cat("\n \n Hypothesis 3: Chi-square test \n \n \n")
 
 chi2 = chisq.test(df$aim, df$category)
 
@@ -529,7 +532,7 @@ model_donation_int = lm(
   data = df
 )
 
-run_regression_block(model_donation_main, model_donation_int, "DONATION")
+run_regression_block(model_donation_main, model_donation_int, "Donation")
 
 cat("\nConditional means from preregistered main-effects regression models\n")
 cat("Adjusted means by condition with 95% CI\n")
