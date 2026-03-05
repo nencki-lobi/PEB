@@ -48,6 +48,22 @@ df = df %>%
   mutate(category = factor(category, levels = c("NEU", "ANG", "COM", "HOP")))
 
 # Helper: run ANOVA + planned contrasts + effect sizes and 95% CI
+
+contrast_d_from_model = function(contr_sum, fit) {
+  # contr_sum = summary(contr, infer=c(TRUE, TRUE))
+  sig = sigma(fit)
+  tcrit = qt(0.975, df = df.residual(fit))
+  
+  contr_sum %>%
+    mutate(
+      d = estimate / sig,
+      d_low = (estimate - tcrit * SE) / sig,
+      d_high = (estimate + tcrit * SE) / sig,
+      sigma = sig,
+      df_resid = df.residual(fit)
+    )
+}
+
 run_manipcheck_anova = function(data, outcome, contrasts_list, label) {
   
   cat("\n\n--- ", label, " (DV = ", outcome, ") ---\n", sep = "")
