@@ -2,6 +2,106 @@ sink(file.path(tdir, paste0("report_", country, "_", type, ".txt")))
 
 df = clean_dataset
 
+# Sensitivity power analysis
+# alpha = .05, power = .80
+
+run_sensitivity_power = function(data, alpha = 0.05, target_power = 0.80) {
+  
+  if (!requireNamespace("pwr", quietly = TRUE)) {
+    stop("Package 'pwr' is required for sensitivity power analysis. Install it with install.packages('pwr').")
+  }
+  
+  data = data %>%
+    mutate(
+      category = factor(category, levels = c("NEU", "ANG", "COM", "HOP")),
+      emo = factor(emo, levels = c("NEU", "EMO"))
+    )
+  
+  # H1: NEU vs pooled emotional conditions
+  n_h1 = data %>%
+    filter(!is.na(emo)) %>%
+    count(emo) %>%
+    tidyr::pivot_wider(names_from = emo, values_from = n)
+  
+  h1 = pwr::pwr.t2n.test(
+    n1 = n_h1$NEU,
+    n2 = n_h1$EMO,
+    d = NULL,
+    sig.level = alpha,
+    power = target_power,
+    alternative = "two.sided"
+  )
+  
+  # H2: four-group ANOVA
+  n_h2 = data %>%
+    filter(!is.na(category)) %>%
+    count(category)
+  
+  harmonic_n = length(n_h2$n) / sum(1 / n_h2$n)
+  
+  h2 = pwr::pwr.anova.test(
+    k = nrow(n_h2),
+    n = harmonic_n,
+    f = NULL,
+    sig.level = alpha,
+    power = target_power
+  )
+  
+  h2_eta2 = h2$f^2 / (1 + h2$f^2)
+  
+  # H3: chi-square test for donation aim preference
+  chi_data = data %>%
+    filter(!is.na(aim), !is.na(category))
+  
+  aim_tab = table(chi_data$aim, chi_data$category)
+  h3_df = (nrow(aim_tab) - 1) * (ncol(aim_tab) - 1)
+  h3_n = sum(aim_tab)
+  
+  h3 = pwr::pwr.chisq.test(
+    w = NULL,
+    N = h3_n,
+    df = h3_df,
+    sig.level = alpha,
+    power = target_power
+  )
+  
+  h3_v = h3$w / sqrt(min(nrow(aim_tab), ncol(aim_tab)) - 1)
+  
+  out = tibble::tibble(
+    hypothesis = c(
+      "H1: NEU vs EMO, two-sample t-test",
+      "H2: four-group ANOVA",
+      "H3: aim x category chi-square"
+    ),
+    test = c(
+      "Welch/t-test approximation",
+      "One-way ANOVA approximation",
+      "Chi-square test"
+    ),
+    n = c(
+      paste0("NEU = ", n_h1$NEU, ", EMO = ", n_h1$EMO),
+      paste0("total N = ", sum(n_h2$n), ", harmonic n/group = ", round(harmonic_n, 1)),
+      paste0("non-missing aim N = ", h3_n, ", df = ", h3_df)
+    ),
+    minimum_detectable_effect = c(
+      paste0("Cohen's d = ", round(h1$d, 3)),
+      paste0("Cohen's f = ", round(h2$f, 3), "; eta^2 = ", round(h2_eta2, 4)),
+      paste0("Cohen's w = ", round(h3$w, 3), "; Cramer's V = ", round(h3_v, 3))
+    ),
+    alpha = alpha,
+    power = target_power
+  )
+  
+  return(out)
+}
+
+cat("\n\nSensitivity power analysis\n")
+cat("Minimum detectable effects for the current analysis dataset, assuming alpha = .05 and power = .80.\n")
+cat("For H2, pwr.anova.test assumes equal group sizes; harmonic mean per group is used as a conservative approximation.\n\n")
+
+power_sensitivity = run_sensitivity_power(df)
+print(power_sensitivity, width = Inf)
+
 # Descriptives total
 
 cat("\n \n Descriptives \n \n")
@@ -280,6 +380,62 @@ output(report(manova_result))
 
 # Hypothesis 2
 
+posthoc_effect_sizes_from_aov = function(fit, term = "category", adjust = "tukey", digits = 3) {
+  
+  emm = emmeans::emmeans(
+    fit,
+    specs = as.formula(paste("~", term))
+  )
+  
+  pairwise_sum = as.data.frame(
+    summary(
+      emmeans::contrast(emm, method = "revpairwise", adjust = adjust),
+      infer = c(TRUE, TRUE)
+    )
+  )
+  
+  es_sum = as.data.frame(
+    summary(
+      emmeans::eff_size(
+        emm,
+        sigma = sigma(fit),
+        edf = df.residual(fit),
+        method = "revpairwise"
+      ),
+      infer = c(TRUE, TRUE),
+      adjust = adjust
+    )
+  )
+  
+  out = pairwise_sum %>%
+    transmute(
+      contrast,
+      mean_difference = estimate,
+      ci_low = lower.CL,
+      ci_high = upper.CL,
+      p_tukey = p.value
+    ) %>%
+    left_join(
+      es_sum %>%
+        transmute(
+          contrast,
+          cohen_d = effect.size,
+          d_low = lower.CL,
+          d_high = upper.CL
+        ),
+      by = "contrast"
+    ) %>%
+    mutate(
+      residual_sd = sigma(fit),
+      df_resid = df.residual(fit),
+      across(where(is.numeric), ~round(.x, digits))
+    )
+  
+  return(out)
+}
+
+# Hypothesis 2
+
 cat("\n \n Hypothesis 2: ANOVA \n")
 
 cat("\n \n ANOVA cPEB \n \n")
@@ -291,6 +447,13 @@ cat("\n \n Posthocs cPEB \n \n")
 posthoc_result = TukeyHSD(anova_result)
 print(posthoc_result)
 
+cat("\n \n Posthoc effect sizes cPEB \n \n")
+cat("Cohen's d was calculated from estimated marginal mean differences using the residual SD from the ANOVA model.\n")
+cat("Confidence intervals are Tukey-adjusted.\n\n")
+posthoc_effect_sizes = posthoc_effect_sizes_from_aov(anova_result, term = "category")
+print(posthoc_effect_sizes)
+
+
 cat("\n \n ANOVA WEPT \n \n")
 anova_result = aov(wept ~ category, data = df)
 output(summary(anova_result))
@@ -300,6 +463,13 @@ cat("\n \n Posthocs WEPT \n \n")
 posthoc_result = TukeyHSD(anova_result)
 print(posthoc_result)
 
+cat("\n \n Posthoc effect sizes WEPT \n \n")
+cat("Cohen's d was calculated from estimated marginal mean differences using the residual SD from the ANOVA model.\n")
+cat("Confidence intervals are Tukey-adjusted.\n\n")
+posthoc_effect_sizes = posthoc_effect_sizes_from_aov(anova_result, term = "category")
+print(posthoc_effect_sizes)
+
+
 cat("\n \n ANOVA Donation \n \n")
 anova_result = aov(donation ~ category, data = df)
 output(summary(anova_result))
@@ -308,6 +478,12 @@ output(report(anova_result))
 cat("\n \n Posthocs Donation \n \n")
 posthoc_result = TukeyHSD(anova_result)
 print(posthoc_result)
+
+cat("\n \n Posthoc effect sizes Donation \n \n")
+cat("Cohen's d was calculated from estimated marginal mean differences using the residual SD from the ANOVA model.\n")
+cat("Confidence intervals are Tukey-adjusted.\n\n")
+posthoc_effect_sizes = posthoc_effect_sizes_from_aov(anova_result, term = "category")
+print(posthoc_effect_sizes)
 
 # Hypothesis 3
 

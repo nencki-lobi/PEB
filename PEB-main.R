@@ -10,6 +10,7 @@ library(broom)
 library(patchwork)
 library(effectsize)
 library(emmeans)
+library(pwr)
 
 odir = "./output"
 if (!dir.exists(odir)) {dir.create(odir)}
